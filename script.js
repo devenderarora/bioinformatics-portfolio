@@ -3,10 +3,12 @@ const ctx = canvas.getContext('2d');
 
 let width, height;
 let particles = [];
+let macromolecules = [];
 
 // Configuration
 const config = {
-    particleCount: 80,
+    particleCount: 40,
+    macroCount: 15,
     particleBaseSize: 2,
     linkDistance: 150,
     mouseRadius: 150,
@@ -39,24 +41,23 @@ window.addEventListener('mouseout', () => {
 });
 
 class Particle {
-    constructor() {
-        this.x = Math.random() * width;
-        this.y = Math.random() * height;
-        this.vx = (Math.random() - 0.5) * 1;
-        this.vy = (Math.random() - 0.5) * 1;
+    constructor(x, y, burst = false) {
+        this.x = x !== undefined ? x : Math.random() * width;
+        this.y = y !== undefined ? y : Math.random() * height;
+        let speed = burst ? 5 : 1;
+        this.vx = (Math.random() - 0.5) * speed;
+        this.vy = (Math.random() - 0.5) * speed;
         this.size = Math.random() * config.particleBaseSize + 1;
+        this.color = config.particleColor;
     }
 
     update() {
-        // Move
         this.x += this.vx;
         this.y += this.vy;
 
-        // Bounce off edges
         if (this.x < 0 || this.x > width) this.vx *= -1;
         if (this.y < 0 || this.y > height) this.vy *= -1;
 
-        // Mouse interaction
         if (mouse.x && mouse.y) {
             let dx = mouse.x - this.x;
             let dy = mouse.y - this.y;
@@ -66,36 +67,208 @@ class Particle {
                 const forceDirectionX = dx / distance;
                 const forceDirectionY = dy / distance;
                 const force = (config.mouseRadius - distance) / config.mouseRadius;
-                
                 this.x -= forceDirectionX * force * 2;
                 this.y -= forceDirectionY * force * 2;
             }
         }
+        
+        // Slow down burst particles over time
+        this.vx *= 0.99;
+        this.vy *= 0.99;
     }
 
     draw() {
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fillStyle = config.particleColor;
+        ctx.fillStyle = this.color;
         ctx.fill();
+    }
+}
+
+class Macromolecule {
+    constructor() {
+        this.x = Math.random() * width;
+        this.y = Math.random() * height;
+        this.vx = (Math.random() - 0.5) * 0.8;
+        this.vy = (Math.random() - 0.5) * 0.8;
+        
+        const types = ['dna', 'rna', 'protein'];
+        this.type = types[Math.floor(Math.random() * types.length)];
+        
+        this.fused = false;
+        this.fusedWith = null;
+        this.rotation = Math.random() * Math.PI * 2;
+        this.rotationSpeed = (Math.random() - 0.5) * 0.05;
+        this.time = Math.random() * 100;
+        
+        if (this.type === 'dna') this.color = 'rgba(16, 185, 129, 0.8)'; // Emerald
+        if (this.type === 'rna') this.color = 'rgba(6, 182, 212, 0.8)';  // Cyan
+        if (this.type === 'protein') this.color = 'rgba(139, 92, 246, 0.8)'; // Purple
+    }
+
+    update(others) {
+        this.time += 0.05;
+        this.rotation += this.rotationSpeed;
+        
+        if (this.fused && this.fusedWith) {
+            // Orbit fused partner
+            let dx = this.fusedWith.x - this.x;
+            let dy = this.fusedWith.y - this.y;
+            let dist = Math.sqrt(dx*dx + dy*dy);
+            
+            if (dist > 30) {
+                this.vx += (dx / dist) * 0.05;
+                this.vy += (dy / dist) * 0.05;
+            }
+            this.color = 'rgba(255, 255, 255, 0.9)'; // Glow white when fused
+        } else {
+            // Check collisions
+            for (let other of others) {
+                if (other === this || other.fused) continue;
+                let dx = other.x - this.x;
+                let dy = other.y - this.y;
+                let dist = Math.sqrt(dx*dx + dy*dy);
+                
+                if (dist < 40) {
+                    this.fuse(other);
+                    break;
+                }
+            }
+        }
+
+        this.x += this.vx;
+        this.y += this.vy;
+        
+        // Damping
+        if (this.vx > 2) this.vx *= 0.9;
+        if (this.vy > 2) this.vy *= 0.9;
+
+        if (this.x < -50) this.x = width + 50;
+        if (this.x > width + 50) this.x = -50;
+        if (this.y < -50) this.y = height + 50;
+        if (this.y > height + 50) this.y = -50;
+    }
+    
+    fuse(other) {
+        this.fused = true;
+        other.fused = true;
+        this.fusedWith = other;
+        other.fusedWith = this;
+        
+        // Burst particles
+        for(let i=0; i<8; i++) {
+            particles.push(new Particle((this.x + other.x)/2, (this.y + other.y)/2, true));
+        }
+    }
+
+    draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rotation);
+        
+        ctx.strokeStyle = this.color;
+        ctx.fillStyle = this.color;
+        ctx.lineWidth = 1.5;
+        
+        if (this.fused) {
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = 'rgba(6, 182, 212, 0.8)';
+        }
+
+        if (this.type === 'dna') {
+            // Draw double helix
+            ctx.beginPath();
+            for(let i=-20; i<=20; i+=4) {
+                let y1 = Math.sin(this.time + i*0.2) * 8;
+                let y2 = Math.sin(this.time + Math.PI + i*0.2) * 8;
+                
+                // Rungs
+                ctx.moveTo(i, y1);
+                ctx.lineTo(i, y2);
+                
+                // Backbones
+                ctx.fillRect(i-1, y1-1, 2, 2);
+                ctx.fillRect(i-1, y2-1, 2, 2);
+            }
+            ctx.stroke();
+        } 
+        else if (this.type === 'rna') {
+            // Draw single wavy strand
+            ctx.beginPath();
+            ctx.moveTo(-20, Math.sin(this.time - 20*0.3) * 6);
+            for(let i=-20; i<=20; i+=2) {
+                ctx.lineTo(i, Math.sin(this.time + i*0.3) * 6);
+            }
+            ctx.stroke();
+            // Bases
+            for(let i=-18; i<=18; i+=6) {
+                let y = Math.sin(this.time + i*0.3) * 6;
+                ctx.beginPath();
+                ctx.moveTo(i, y);
+                ctx.lineTo(i, y + 4);
+                ctx.stroke();
+            }
+        } 
+        else if (this.type === 'protein') {
+            // Draw folded blob (3-4 intersecting circles)
+            const blobs = [
+                {x: -6, y: -4, r: 6},
+                {x: 6, y: -2, r: 8},
+                {x: -2, y: 6, r: 7},
+                {x: 8, y: 5, r: 5}
+            ];
+            ctx.beginPath();
+            blobs.forEach(b => {
+                ctx.moveTo(b.x + b.r, b.y);
+                ctx.arc(b.x, b.y, b.r, 0, Math.PI*2);
+            });
+            ctx.fill();
+        }
+        
+        ctx.restore();
     }
 }
 
 function initParticles() {
     particles = [];
+    macromolecules = [];
+    
     for (let i = 0; i < config.particleCount; i++) {
         particles.push(new Particle());
+    }
+    for (let i = 0; i < config.macroCount; i++) {
+        macromolecules.push(new Macromolecule());
     }
 }
 
 function animate() {
     ctx.clearRect(0, 0, width, height);
 
+    // Update & Draw Macromolecules
+    for (let i = 0; i < macromolecules.length; i++) {
+        macromolecules[i].update(macromolecules);
+        macromolecules[i].draw();
+        
+        // Draw faint links from macromolecules to nearby particles
+        for(let j = 0; j < particles.length; j++) {
+            let dx = macromolecules[i].x - particles[j].x;
+            let dy = macromolecules[i].y - particles[j].y;
+            let dist = Math.sqrt(dx*dx + dy*dy);
+            if(dist < 80) {
+                ctx.beginPath();
+                ctx.moveTo(macromolecules[i].x, macromolecules[i].y);
+                ctx.lineTo(particles[j].x, particles[j].y);
+                ctx.strokeStyle = `rgba(16, 185, 129, ${(1 - dist/80) * 0.15})`;
+                ctx.stroke();
+            }
+        }
+    }
+
+    // Update & Draw Particles
     for (let i = 0; i < particles.length; i++) {
         particles[i].update();
         particles[i].draw();
 
-        // Draw connections
         for (let j = i; j < particles.length; j++) {
             let dx = particles[i].x - particles[j].x;
             let dy = particles[i].y - particles[j].y;
@@ -105,10 +278,8 @@ function animate() {
                 ctx.beginPath();
                 ctx.moveTo(particles[i].x, particles[i].y);
                 ctx.lineTo(particles[j].x, particles[j].y);
-                
-                // Fade out link as distance increases
                 let opacity = 1 - (distance / config.linkDistance);
-                ctx.strokeStyle = `rgba(6, 182, 212, ${opacity * 0.3})`;
+                ctx.strokeStyle = `rgba(6, 182, 212, ${opacity * 0.2})`;
                 ctx.lineWidth = 1;
                 ctx.stroke();
             }
@@ -127,6 +298,24 @@ window.addEventListener('click', (e) => {
         if (distance < 300) {
             p.vx -= (dx / distance) * 10;
             p.vy -= (dy / distance) * 10;
+        }
+    });
+    macromolecules.forEach(m => {
+        let dx = e.x - m.x;
+        let dy = e.y - m.y;
+        let distance = Math.sqrt(dx*dx + dy*dy);
+        if (distance < 200) {
+            m.vx -= (dx / distance) * 5;
+            m.vy -= (dy / distance) * 5;
+            
+            // Break fusions on click
+            if (m.fused) {
+                m.fused = false;
+                m.fusedWith = null;
+                m.color = m.type === 'dna' ? 'rgba(16, 185, 129, 0.8)' : 
+                          m.type === 'rna' ? 'rgba(6, 182, 212, 0.8)' : 
+                          'rgba(139, 92, 246, 0.8)';
+            }
         }
     });
 });
