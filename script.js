@@ -92,7 +92,7 @@ class Macromolecule {
         this.vx = (Math.random() - 0.5) * 0.8;
         this.vy = (Math.random() - 0.5) * 0.8;
         
-        const types = ['dna', 'rna', 'protein'];
+        const types = ['dna', 'rna', 'protein', 'lipid', 'carbohydrate'];
         this.type = types[Math.floor(Math.random() * types.length)];
         
         this.fused = false;
@@ -104,6 +104,8 @@ class Macromolecule {
         if (this.type === 'dna') this.color = 'rgba(16, 185, 129, 0.8)'; // Emerald
         if (this.type === 'rna') this.color = 'rgba(6, 182, 212, 0.8)';  // Cyan
         if (this.type === 'protein') this.color = 'rgba(139, 92, 246, 0.8)'; // Purple
+        if (this.type === 'lipid') this.color = 'rgba(245, 158, 11, 0.8)'; // Amber
+        if (this.type === 'carbohydrate') this.color = 'rgba(236, 72, 153, 0.8)'; // Pink
     }
 
     update(others) {
@@ -224,6 +226,43 @@ class Macromolecule {
             });
             ctx.fill();
         }
+        else if (this.type === 'lipid') {
+            // Draw lipid (circle head with two wavy tails)
+            ctx.beginPath();
+            ctx.arc(0, -6, 4, 0, Math.PI*2); // Head
+            ctx.fill();
+            
+            ctx.beginPath();
+            // Tail 1
+            ctx.moveTo(-2, -2);
+            ctx.lineTo(-4, 4);
+            ctx.lineTo(-2, 10);
+            ctx.lineTo(-4, 16);
+            // Tail 2
+            ctx.moveTo(2, -2);
+            ctx.lineTo(4, 5);
+            ctx.lineTo(1, 11);
+            ctx.lineTo(3, 17);
+            ctx.stroke();
+        }
+        else if (this.type === 'carbohydrate') {
+            // Draw hexagon ring (glucose-like)
+            ctx.beginPath();
+            for(let i=0; i<6; i++) {
+                let angle = i * Math.PI / 3;
+                let hx = Math.cos(angle) * 8;
+                let hy = Math.sin(angle) * 8;
+                if(i===0) ctx.moveTo(hx, hy);
+                else ctx.lineTo(hx, hy);
+            }
+            ctx.closePath();
+            ctx.stroke();
+            // Add a side branch
+            ctx.beginPath();
+            ctx.moveTo(4, -6.9);
+            ctx.lineTo(8, -12);
+            ctx.stroke();
+        }
         
         ctx.restore();
     }
@@ -314,7 +353,9 @@ window.addEventListener('click', (e) => {
                 m.fusedWith = null;
                 m.color = m.type === 'dna' ? 'rgba(16, 185, 129, 0.8)' : 
                           m.type === 'rna' ? 'rgba(6, 182, 212, 0.8)' : 
-                          'rgba(139, 92, 246, 0.8)';
+                          m.type === 'protein' ? 'rgba(139, 92, 246, 0.8)' :
+                          m.type === 'lipid' ? 'rgba(245, 158, 11, 0.8)' :
+                          'rgba(236, 72, 153, 0.8)';
             }
         }
     });
@@ -328,39 +369,7 @@ animate();
    SURREAL ENHANCEMENTS
 ========================================= */
 
-// 1. Custom Cursor
-const cursorDot = document.getElementById('cursor-dot');
-const cursorOutline = document.getElementById('cursor-outline');
-
-window.addEventListener('mousemove', (e) => {
-    const posX = e.clientX;
-    const posY = e.clientY;
-    
-    cursorDot.style.left = `${posX}px`;
-    cursorDot.style.top = `${posY}px`;
-    
-    // Slight delay for outline
-    cursorOutline.animate({
-        left: `${posX}px`,
-        top: `${posY}px`
-    }, { duration: 500, fill: "forwards" });
-});
-
-// Cursor hover effects on links/buttons
-document.querySelectorAll('a, button, .skill-tag').forEach(el => {
-    el.addEventListener('mouseenter', () => {
-        cursorOutline.style.width = '60px';
-        cursorOutline.style.height = '60px';
-        cursorOutline.style.backgroundColor = 'rgba(16, 185, 129, 0.1)';
-    });
-    el.addEventListener('mouseleave', () => {
-        cursorOutline.style.width = '40px';
-        cursorOutline.style.height = '40px';
-        cursorOutline.style.backgroundColor = 'transparent';
-    });
-});
-
-// 2. Scroll Reveal Animations
+// 1. Scroll Reveal Animations
 const observerOptions = {
     threshold: 0.1,
     rootMargin: "0px 0px -50px 0px"
