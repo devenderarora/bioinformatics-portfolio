@@ -477,6 +477,27 @@ Data:
 - Contact: devarora@hotmail.com, +1-7657469053, or LinkedIn.
 Keep responses short, professional, and slightly robotic/terminal-like. Do not answer questions unrelated to Devender Arora or bioinformatics.`;
 
+const qaDB = {
+    'skill': 'I specialize in Multi-Omics integration (DIABLO, MOFA), scRNA-seq, Proteomics, and Machine Learning using Python, R, and Nextflow.',
+    'contact': 'You can reach out to me at devarora@hotmail.com or connect with me on LinkedIn.',
+    'purdue': 'At Purdue University, I manage scRNA-seq, Proteomics, Metagenomics, and Spatial Transcriptomics projects.',
+    'experience': 'I have over 8 years of experience in bioinformatics, starting as an SRF in India, a Postdoc in South Korea, and currently a Senior Scientist at Purdue.',
+    'publication': 'My recent publications include papers in Scientific Reports, Communication Biology, and PLoS Pathogens focusing on multi-omics and transcriptomics.',
+    'hello': 'Greetings. I am ready to process your queries. You can ask about my skills, experience, or publications.',
+    'hi': 'Greetings. I am ready to process your queries.',
+    'who': 'I am DA Terminal AI, a simulated assistant for Devender Arora, a Senior Bioinformatics Scientist.'
+};
+
+function getStaticResponse(text) {
+    text = text.toLowerCase();
+    for (const [key, answer] of Object.entries(qaDB)) {
+        if (text.includes(key)) {
+            return answer;
+        }
+    }
+    return "Data not found. Please query about my 'skills', 'experience', 'publications', 'contact', or 'Purdue'.";
+}
+
 async function fetchGeminiResponse(userMessage) {
     if (GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY_HERE') {
         return "ERROR: API Key not configured. Please open `script.js` and add your Free Gemini API Key.";
@@ -511,15 +532,15 @@ async function fetchGeminiResponse(userMessage) {
         if (data.candidates && data.candidates[0].content.parts[0].text) {
             return data.candidates[0].content.parts[0].text;
         } else if (data.error && data.error.message) {
-            console.error(data);
-            return `API Error: ${data.error.message}`;
+            console.error("API Error:", data.error.message);
+            throw new Error("API Limit or Revoked");
         } else {
-            console.error(data);
-            return "Connection error. Failed to parse AI response. Check browser console.";
+            console.error("Unknown Error:", data);
+            throw new Error("Unknown response structure");
         }
     } catch (error) {
-        console.error(error);
-        return "Network error. Unable to reach AI servers.";
+        console.error("Fetch failed:", error);
+        throw error;
     }
 }
 
@@ -551,7 +572,16 @@ async function handleQuery() {
     chatBody.scrollTop = chatBody.scrollHeight;
     
     // Fetch response
-    const aiResponse = await fetchGeminiResponse(text);
+    let aiResponse;
+    try {
+        if (GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY_HERE') throw new Error("No API Key");
+        aiResponse = await fetchGeminiResponse(text);
+    } catch (err) {
+        console.log("API offline or key revoked. Falling back to static database.");
+        // Add a slight delay to simulate processing for the static response
+        await new Promise(resolve => setTimeout(resolve, 600));
+        aiResponse = getStaticResponse(text);
+    }
     
     // Remove typing indicator
     const indicator = document.getElementById('typing-indicator');
