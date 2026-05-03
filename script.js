@@ -8,7 +8,7 @@ let macromolecules = [];
 // Configuration
 const config = {
     particleCount: 40,
-    macroCount: 15,
+    macroCount: 40,
     particleBaseSize: 2,
     linkDistance: 150,
     mouseRadius: 150,
@@ -89,16 +89,16 @@ class Macromolecule {
     constructor() {
         this.x = Math.random() * width;
         this.y = Math.random() * height;
-        this.vx = (Math.random() - 0.5) * 0.8;
-        this.vy = (Math.random() - 0.5) * 0.8;
+        this.vx = (Math.random() - 0.5) * 0.3;
+        this.vy = (Math.random() - 0.5) * 0.3;
         
-        const types = ['dna', 'rna', 'protein', 'lipid', 'carbohydrate'];
+        const types = ['dna', 'rna', 'protein', 'lipid', 'carbohydrate', 'metabolite'];
         this.type = types[Math.floor(Math.random() * types.length)];
         
         this.fused = false;
         this.fusedWith = null;
         this.rotation = Math.random() * Math.PI * 2;
-        this.rotationSpeed = (Math.random() - 0.5) * 0.05;
+        this.rotationSpeed = (Math.random() - 0.5) * 0.02;
         this.time = Math.random() * 100;
         
         if (this.type === 'dna') this.color = 'rgba(16, 185, 129, 0.8)'; // Emerald
@@ -106,6 +106,7 @@ class Macromolecule {
         if (this.type === 'protein') this.color = 'rgba(139, 92, 246, 0.8)'; // Purple
         if (this.type === 'lipid') this.color = 'rgba(245, 158, 11, 0.8)'; // Amber
         if (this.type === 'carbohydrate') this.color = 'rgba(236, 72, 153, 0.8)'; // Pink
+        if (this.type === 'metabolite') this.color = 'rgba(234, 179, 8, 0.8)'; // Yellow
     }
 
     update(others) {
@@ -141,9 +142,9 @@ class Macromolecule {
         this.x += this.vx;
         this.y += this.vy;
         
-        // Damping
-        if (this.vx > 2) this.vx *= 0.9;
-        if (this.vy > 2) this.vy *= 0.9;
+        // Damping (fixed bug to allow negative velocity damping)
+        if (Math.abs(this.vx) > 1.5) this.vx *= 0.9;
+        if (Math.abs(this.vy) > 1.5) this.vy *= 0.9;
 
         if (this.x < -50) this.x = width + 50;
         if (this.x > width + 50) this.x = -50;
@@ -263,6 +264,19 @@ class Macromolecule {
             ctx.lineTo(8, -12);
             ctx.stroke();
         }
+        else if (this.type === 'metabolite') {
+            // Draw a small distinct triangle
+            ctx.beginPath();
+            for(let i=0; i<3; i++) {
+                let angle = i * Math.PI * 2 / 3 - Math.PI/2;
+                let px = Math.cos(angle) * 7;
+                let py = Math.sin(angle) * 7;
+                if(i===0) ctx.moveTo(px, py);
+                else ctx.lineTo(px, py);
+            }
+            ctx.closePath();
+            ctx.fill();
+        }
         
         ctx.restore();
     }
@@ -288,17 +302,34 @@ function animate() {
         macromolecules[i].update(macromolecules);
         macromolecules[i].draw();
         
-        // Draw faint links from macromolecules to nearby particles
-        for(let j = 0; j < particles.length; j++) {
-            let dx = macromolecules[i].x - particles[j].x;
-            let dy = macromolecules[i].y - particles[j].y;
-            let dist = Math.sqrt(dx*dx + dy*dy);
-            if(dist < 80) {
-                ctx.beginPath();
-                ctx.moveTo(macromolecules[i].x, macromolecules[i].y);
-                ctx.lineTo(particles[j].x, particles[j].y);
-                ctx.strokeStyle = `rgba(16, 185, 129, ${(1 - dist/80) * 0.15})`;
-                ctx.stroke();
+        if (macromolecules[i].fused) {
+            // Draw bright, dense network web when fused
+            for(let j = 0; j < particles.length; j++) {
+                let dx = macromolecules[i].x - particles[j].x;
+                let dy = macromolecules[i].y - particles[j].y;
+                let dist = Math.sqrt(dx*dx + dy*dy);
+                if(dist < 180) {
+                    ctx.beginPath();
+                    ctx.moveTo(macromolecules[i].x, macromolecules[i].y);
+                    ctx.lineTo(particles[j].x, particles[j].y);
+                    ctx.strokeStyle = `rgba(255, 255, 255, ${(1 - dist/180) * 0.4})`;
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
+                }
+            }
+        } else {
+            // Draw faint links from macromolecules to nearby particles
+            for(let j = 0; j < particles.length; j++) {
+                let dx = macromolecules[i].x - particles[j].x;
+                let dy = macromolecules[i].y - particles[j].y;
+                let dist = Math.sqrt(dx*dx + dy*dy);
+                if(dist < 80) {
+                    ctx.beginPath();
+                    ctx.moveTo(macromolecules[i].x, macromolecules[i].y);
+                    ctx.lineTo(particles[j].x, particles[j].y);
+                    ctx.strokeStyle = `rgba(16, 185, 129, ${(1 - dist/80) * 0.15})`;
+                    ctx.stroke();
+                }
             }
         }
     }
@@ -436,12 +467,14 @@ let chatHistory = [];
 
 const systemPrompt = `You are DA Terminal AI, a simulated AI assistant for Devender Arora, a Senior Bioinformatics Scientist. 
 You are integrated into his portfolio website.
-Your goal is to answer questions about his career, skills, and contact info based on his resume data.
+Your goal is to answer questions about his career, skills, publications, and contact info based on his resume data.
 Data:
-- Current Role: Senior Bioinformatics Scientist at Purdue University.
-- Previous Roles: Computational Biologist at Genomic Center (2020), Bioinformatics Analyst at Research Institute (2017).
-- Skills: Multi-Omics integration (DIABLO, MOFA), scRNA-seq, Proteomics, Nextflow, Python, R, Seurat, Docker.
-- Contact: devarora@hotmail.com or LinkedIn.
+- Current Role: Bioinformatics Senior Research Scientist at Purdue University (Jan 2023 - Present). Managing scRNA-seq, Proteomics, Metagenomics, Spatial Transcriptomics.
+- Past Roles: Postdoctoral Fellow at Purdue (2022) & National Institute of Animal Science, South Korea (2019-2021). Senior Research Fellow at IASRI, India (2018-2019).
+- Education: Ph.D. in Biotechnology (Bioinformatics) from Uttarakhand Technical University.
+- Skills: Multi-Omics integration (DIABLO, MOFA, IntegrAO), scRNA-seq, Proteomics, Epigenetics (ChIP-seq, ATAC-seq), Nextflow, Snakemake, Python, R, Machine Learning/Deep Learning, Docker.
+- Recent Pubs: Hessian fly tolerance in wheat (2026), Phage therapy impact (2026), Mouse bone spatial gene expression (2026), Fungi in asthmatic horses (2026), Candida auris single-cell transcriptomics (2024).
+- Contact: devarora@hotmail.com, +1-7657469053, or LinkedIn.
 Keep responses short, professional, and slightly robotic/terminal-like. Do not answer questions unrelated to Devender Arora or bioinformatics.`;
 
 async function fetchGeminiResponse(userMessage) {

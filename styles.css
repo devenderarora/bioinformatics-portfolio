@@ -4,8 +4,8 @@
     --accent-secondary: #06b6d4;
     --text-main: #f8fafc;
     --text-muted: #94a3b8;
-    --glass-bg: rgba(15, 23, 42, 0.6);
-    --glass-border: rgba(16, 185, 129, 0.2);
+    --glass-bg: rgba(15, 23, 42, 0.2);
+    --glass-border: rgba(16, 185, 129, 0.3);
     
     --font-sans: 'Inter', sans-serif;
     --font-mono: 'Fira Code', monospace;
@@ -61,6 +61,7 @@ nav {
     font-size: 24px;
     color: var(--accent-primary);
     letter-spacing: 2px;
+    text-decoration: none;
 }
 
 .nav-links a {
@@ -273,6 +274,73 @@ main {
     font-weight: 300;
 }
 
+/* Publications */
+.publications-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.publication-item {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.publication-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.pub-year {
+    font-family: var(--font-mono);
+    color: var(--accent-primary);
+    font-weight: bold;
+    font-size: 1.1rem;
+    min-width: 60px;
+}
+
+.publication-item p {
+    margin: 0;
+    line-height: 1.5;
+    font-size: 0.95rem;
+}
+
+.publication-item strong {
+    color: var(--text-main);
+}
+
+.publication-item em {
+    color: var(--accent-secondary);
+    font-style: normal;
+}
+
+.scholar-button {
+    display: inline-block;
+    padding: 0.8rem 1.5rem;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid var(--accent-primary);
+    color: var(--accent-primary);
+    text-decoration: none;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    text-align: center;
+    width: fit-content;
+    margin: 0 auto;
+    display: block;
+}
+
+.scholar-button:hover {
+    background: var(--accent-primary);
+    color: var(--bg-dark);
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+}
+
 footer {
     text-align: center;
     padding: 40px 0;
@@ -410,8 +478,10 @@ footer {
     bottom: 20px;
     right: 20px;
     width: 320px;
-    background: var(--bg-dark);
-    border: 1px solid var(--accent-primary);
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
     border-radius: 8px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(16, 185, 129, 0.2);
     z-index: 1000;
