@@ -311,6 +311,12 @@ body {
     position: relative;
     overflow: hidden;
     animation: pulse-border 2.5s ease-in-out infinite;
+    /* Android Chrome touch fixes */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(16,185,129,0.2);
+    -webkit-appearance: none;
+    user-select: none;
+    z-index: 10;
 }
 
 #start-codon-btn::before {
@@ -430,13 +436,19 @@ body {
 /* Center dogma area inside ring */
 .dogma-central {
     position: absolute;
-    inset: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 18px;
-    padding: 20px;
+    justify-content: flex-start;  /* Don't center — clip-safe for mobile */
+    padding-top: 14px;
+    gap: 14px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overflow-x: hidden;
 }
 
 .orbit-center-label {
@@ -1086,6 +1098,140 @@ footer {
 
     .name { font-size: 26px; }
     .dogma-name { font-size: 18px; }
+}
+
+/* =========================================
+   ANDROID CHROME — Vertical Dogma Flow
+   When ring is too small to fit horizontal flow,
+   stack the dogma elements top-to-bottom.
+========================================= */
+@media (max-width: 600px) {
+    /* Switch horizontal row → vertical column */
+    .dogma-flow {
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        width: 100%;
+    }
+
+    /* Rotate the bidirectional arrow block 90° for vertical flow */
+    .bidir-arrow-block {
+        flex-direction: row;
+        gap: 8px;
+    }
+
+    .bidir-row {
+        align-items: center;
+        flex-direction: row;
+        gap: 4px;
+    }
+
+    /* Arrow tracks become vertical bars */
+    .arrow-track-sm {
+        width: 6px;
+        height: 36px;
+        border-top: none;
+        border-left: 1.5px solid rgba(16, 185, 129, 0.4);
+    }
+
+    .arrow-track-rev {
+        border-top: none;
+        border-left: 1.5px solid rgba(245, 158, 11, 0.4);
+    }
+
+    .arrow-head-fwd {
+        right: auto;
+        top: auto;
+        bottom: -6px;
+        left: 50%;
+        transform: translateX(-50%) rotate(90deg);
+    }
+
+    .arrow-head-rev {
+        left: auto;
+        top: -6px;
+        right: auto;
+        left: 50%;
+        transform: translateX(-50%) rotate(-90deg);
+    }
+
+    /* Horizontal particles → vertical */
+    .arrow-particle {
+        left: 50%;
+        transform: translateX(-50%) translateY(-50%);
+        animation: flow-vertical 2s linear infinite;
+    }
+
+    .arrow-particle-rev {
+        right: auto;
+        left: 50%;
+        transform: translateX(-50%) translateY(-50%);
+        animation: flow-vertical-rev 2s linear infinite;
+    }
+
+    @keyframes flow-vertical {
+        0%   { top: 0%;   opacity: 0; }
+        10%  { opacity: 1; }
+        90%  { opacity: 1; }
+        100% { top: 85%;  opacity: 0; }
+    }
+    @keyframes flow-vertical-rev {
+        0%   { top: 85%;  opacity: 0; }
+        10%  { opacity: 1; }
+        90%  { opacity: 1; }
+        100% { top: 0%;   opacity: 0; }
+    }
+
+    /* Translation arrow also vertical */
+    .dogma-arrow {
+        flex-direction: row;
+        gap: 8px;
+        min-width: auto;
+    }
+
+    .arrow-track {
+        width: 6px;
+        height: 36px;
+        border-top: none;
+        border-left: 2px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .arrow-head {
+        right: auto;
+        top: auto;
+        bottom: -6px;
+        left: 50%;
+        transform: translateX(-50%) rotate(90deg);
+    }
+
+    /* Nodes full-width */
+    .dogma-node { min-width: 80%; }
+
+    /* Callout flips to show above on vertical layout */
+    .node-callout, .node-callout-left {
+        bottom: auto;
+        top: calc(100% + 10px);
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%) translateY(-6px);
+    }
+
+    .dogma-node:hover .node-callout,
+    .dogma-node:hover .node-callout-left {
+        transform: translateX(-50%) translateY(0);
+    }
+
+    /* ATG button — ensure it's always fully visible */
+    .dogma-central .start-codon-container {
+        padding-bottom: 20px;
+    }
+
+    #start-codon-btn {
+        flex-direction: column;
+        gap: 4px;
+        padding: 12px 20px;
+        text-align: center;
+    }
 }
 
 /* =========================================
