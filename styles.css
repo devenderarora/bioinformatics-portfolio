@@ -477,9 +477,9 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    /* 22% padding-top keeps nodes slightly elevated so riddle fits below without scrolling */
-    padding: 22% 12px 16px;
-    gap: 12px;
+    /* 12% padding-top pulls nodes high enough to fit riddle and ATG button cleanly on all laptop screens */
+    padding: 12% 12px 16px;
+    gap: 8px; /* Tighter gap between rows */
     overflow: visible;
 }
 
