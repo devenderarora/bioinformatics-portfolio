@@ -85,7 +85,7 @@ body {
     font-size: 14px;
     color: var(--accent-primary);
     letter-spacing: 2px;
-    margin-bottom: 12px;
+    margin-bottom: 4px; /* Reduced from 12px */
     opacity: 0.8;
 }
 
@@ -93,11 +93,12 @@ body {
     font-size: clamp(32px, 5vw, 56px);
     font-weight: 600;
     letter-spacing: 3px;
+    line-height: 1.1; /* Tighter line height */
     background: linear-gradient(135deg, #10b981, #06b6d4, #8b5cf6);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    margin-bottom: 8px;
+    margin-bottom: 4px; /* Reduced from 8px */
 }
 
 .dogma-subtitle {
