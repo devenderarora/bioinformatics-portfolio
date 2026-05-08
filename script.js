@@ -104,6 +104,39 @@ if (daLogoLink) {
 }
 
 // =====================================================
+// SATELLITE RESCALING — Keep positions proportional on mobile
+// =====================================================
+// Original positions are calculated for a 580x580 wrapper.
+// When the wrapper shrinks via CSS width/height, we rescale by ratio.
+const SAT_ORIGINAL_SIZE = 580;
+const SAT_DATA = [
+    { selector: '.sat-top', ox: 290, oy: 35  },
+    { selector: '.sat-tr',  ox: 540, oy: 168 },
+    { selector: '.sat-br',  ox: 540, oy: 412 },
+    { selector: '.sat-bl',  ox: 40,  oy: 412 },
+    { selector: '.sat-tl',  ox: 40,  oy: 168 },
+];
+
+function rescaleSatellites() {
+    const wrapper = document.querySelector('.orbit-wrapper');
+    if (!wrapper) return;
+    const currentSize = wrapper.offsetWidth;
+    const ratio = currentSize / SAT_ORIGINAL_SIZE;
+    SAT_DATA.forEach(({ selector, ox, oy }) => {
+        const el = document.querySelector(selector);
+        if (el) {
+            el.style.left = (ox * ratio) + 'px';
+            el.style.top  = (oy * ratio) + 'px';
+        }
+    });
+}
+
+// Run on load and on resize
+window.addEventListener('load',   rescaleSatellites);
+window.addEventListener('resize', rescaleSatellites);
+rescaleSatellites();
+
+// =====================================================
 // MAIN PORTFOLIO CANVAS
 // =====================================================
 const canvas = document.getElementById('network-canvas');

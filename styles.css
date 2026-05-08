@@ -30,14 +30,20 @@ body {
 ========================================= */
 #splash-overlay {
     position: fixed;
-    inset: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
     z-index: 9999;
     background: #040c18;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     transition: opacity 0.8s ease, visibility 0.8s ease;
-    overflow: hidden;
 }
 
 #splash-overlay.hidden {
@@ -62,8 +68,9 @@ body {
     align-items: center;
     gap: 20px;
     width: 100%;
-    padding: 20px;
-    overflow: hidden;
+    min-height: 100%;
+    padding: 20px 20px 40px;
+    /* Do NOT clip overflow — let content scroll on mobile */
 }
 
 /* Title block */
@@ -994,9 +1001,9 @@ footer {
     .dogma-flow { gap: 4px; }
 
     .orbit-wrapper {
-        transform: scale(0.85);
-        transform-origin: top center;
-        margin-bottom: -80px;
+        width: 500px;
+        height: 500px;
+        transform: none;
     }
 }
 
@@ -1006,11 +1013,11 @@ footer {
     .nav-links, .contact-btn { display: none; }
     .hamburger-btn { display: flex; }
 
-    /* Orbital ring — scale down to fit */
+    /* Orbital ring — shrink to fit phone screen */
     .orbit-wrapper {
-        transform: scale(0.58);
-        transform-origin: top center;
-        margin-bottom: -240px;
+        width: min(580px, 96vw);
+        height: min(580px, 96vw);
+        transform: none;
     }
 
     /* Hero */
@@ -1044,9 +1051,9 @@ footer {
 /* --- Mobile (≤ 480px) --- */
 @media (max-width: 480px) {
     .orbit-wrapper {
-        transform: scale(0.46);
-        transform-origin: top center;
-        margin-bottom: -310px;
+        width: min(480px, 95vw);
+        height: min(480px, 95vw);
+        transform: none;
     }
 
     .name { font-size: 30px; }
@@ -1072,9 +1079,9 @@ footer {
 /* --- Very small mobile (≤ 360px) --- */
 @media (max-width: 360px) {
     .orbit-wrapper {
-        transform: scale(0.38);
-        transform-origin: top center;
-        margin-bottom: -360px;
+        width: min(360px, 94vw);
+        height: min(360px, 94vw);
+        transform: none;
     }
 
     .name { font-size: 26px; }
