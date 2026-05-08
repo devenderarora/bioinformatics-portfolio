@@ -25,6 +25,579 @@ body {
     overflow-x: hidden;
 }
 
+/* =========================================
+   CENTRAL DOGMA SPLASH OVERLAY
+========================================= */
+#splash-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: #040c18;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.8s ease, visibility 0.8s ease;
+    overflow: hidden;
+}
+
+#splash-overlay.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+#dogma-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+.dogma-ui {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    padding: 20px;
+    overflow: hidden;
+}
+
+/* Title block */
+.dogma-title {
+    text-align: center;
+    animation: fadeInDown 1s ease forwards;
+}
+
+.dogma-greeting {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--accent-primary);
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+    opacity: 0.8;
+}
+
+.dogma-name {
+    font-size: clamp(32px, 5vw, 56px);
+    font-weight: 600;
+    letter-spacing: 3px;
+    background: linear-gradient(135deg, #10b981, #06b6d4, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+}
+
+.dogma-subtitle {
+    font-family: var(--font-mono);
+    font-size: 16px;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+}
+
+/* Dogma flow row */
+.dogma-flow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    animation: fadeIn 1.2s ease 0.4s forwards;
+    opacity: 0;
+}
+
+/* Molecule nodes */
+.dogma-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    cursor: pointer;
+    padding: 24px 20px 20px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.03);
+    backdrop-filter: blur(6px);
+    transition: all 0.35s ease;
+    min-width: 140px;
+}
+
+.dogma-node:hover {
+    border-color: rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.07);
+    transform: translateY(-6px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+}
+
+#node-dna:hover { border-color: rgba(16, 185, 129, 0.5); box-shadow: 0 0 30px rgba(16,185,129,0.15); }
+#node-rna:hover { border-color: rgba(6, 182, 212, 0.5); box-shadow: 0 0 30px rgba(6,182,212,0.15); }
+#node-protein:hover { border-color: rgba(139, 92, 246, 0.5); box-shadow: 0 0 30px rgba(139,92,246,0.15); }
+
+.node-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: float 4s ease-in-out infinite;
+}
+
+.dna-icon { animation-delay: 0s; }
+.rna-icon { animation-delay: 0.5s; }
+.protein-icon { animation-delay: 1s; }
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+.node-label {
+    font-family: var(--font-mono);
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+#node-dna .node-label { color: #10b981; }
+#node-rna .node-label { color: #06b6d4; }
+#node-protein .node-label { color: #8b5cf6; }
+
+.node-sublabel {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    letter-spacing: 1px;
+}
+
+/* Hover callout cards */
+.node-callout {
+    position: absolute;
+    bottom: calc(100% + 16px);
+    left: 50%;
+    transform: translateX(-50%) translateY(8px);
+    width: 240px;
+    background: rgba(4, 12, 24, 0.95);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 10px;
+    padding: 16px;
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    pointer-events: none;
+    opacity: 0;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    z-index: 10;
+}
+
+.node-callout strong {
+    display: block;
+    color: var(--text-main);
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.dogma-node:hover .node-callout {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Animated arrows */
+.dogma-arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-width: 90px;
+}
+
+.arrow-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent-primary);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.arrow-enzyme {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+}
+
+.arrow-track {
+    position: relative;
+    width: 90px;
+    height: 14px;
+    border-top: 2px solid rgba(16, 185, 129, 0.3);
+    display: flex;
+    align-items: center;
+}
+
+.arrow-head {
+    position: absolute;
+    right: -6px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--accent-primary);
+    font-size: 14px;
+}
+
+.arrow-particle {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: var(--accent-primary);
+    border-radius: 50%;
+    top: 50%;
+    transform: translateY(-50%);
+    animation: flow 2s linear infinite;
+    box-shadow: 0 0 6px var(--accent-primary);
+}
+
+.p1 { animation-delay: 0s; }
+.p2 { animation-delay: 0.66s; }
+.p3 { animation-delay: 1.33s; }
+
+@keyframes flow {
+    0%   { left: 0%; opacity: 0; }
+    10%  { opacity: 1; }
+    90%  { opacity: 1; }
+    100% { left: 85%; opacity: 0; }
+}
+
+/* ATG Start Codon */
+.start-codon-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    animation: fadeIn 1.5s ease 0.8s forwards;
+    opacity: 0;
+}
+
+.codon-label {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--accent-primary);
+    letter-spacing: 2px;
+    opacity: 0.7;
+}
+
+#start-codon-btn {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 36px;
+    background: transparent;
+    border: 2px solid var(--accent-primary);
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    color: var(--text-main);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    animation: pulse-border 2.5s ease-in-out infinite;
+}
+
+#start-codon-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(16,185,129,0.1), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.5s ease;
+}
+
+#start-codon-btn:hover::before {
+    transform: translateX(100%);
+}
+
+#start-codon-btn:hover {
+    background: rgba(16, 185, 129, 0.15);
+    box-shadow: 0 0 30px rgba(16, 185, 129, 0.4), 0 0 60px rgba(16, 185, 129, 0.15);
+    transform: scale(1.04);
+    animation: none;
+    border-color: #10b981;
+}
+
+.codon-atg {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent-primary);
+    letter-spacing: 4px;
+    text-shadow: 0 0 12px var(--accent-primary);
+}
+
+.codon-text {
+    font-size: 13px;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.codon-hint {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    opacity: 0.5;
+    letter-spacing: 1px;
+}
+
+@keyframes pulse-border {
+    0%, 100% { box-shadow: 0 0 10px rgba(16, 185, 129, 0.2); }
+    50% { box-shadow: 0 0 25px rgba(16, 185, 129, 0.5), 0 0 50px rgba(16, 185, 129, 0.15); }
+}
+
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Orbital ring wrapper */
+.orbit-wrapper {
+    position: relative;
+    width: 580px;
+    height: 580px;
+    flex-shrink: 0;
+    animation: fadeIn 1.2s ease 0.4s forwards;
+    opacity: 0;
+}
+
+.orbit-ring-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+/* Satellite nodes on the ring */
+.satellite {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    animation: orbit-pulse 3s ease-in-out infinite;
+}
+
+.satellite span {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    white-space: nowrap;
+}
+
+.sat-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    box-shadow: 0 0 10px currentColor;
+    animation: satellite-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes orbit-pulse {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-50%, -50%) scale(1.1); }
+}
+
+@keyframes satellite-glow {
+    from { opacity: 0.6; }
+    to { opacity: 1; box-shadow: 0 0 16px; }
+}
+
+/* Center dogma area inside ring */
+.dogma-central {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    padding: 20px;
+}
+
+.orbit-center-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--accent-primary);
+    text-transform: uppercase;
+    opacity: 0.7;
+}
+
+/* Dogma flow row (compact for inside ring) */
+.dogma-flow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: nowrap;
+}
+
+/* Bidirectional arrow block (DNA ↔ RNA) */
+.bidir-arrow-block {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: center;
+    min-width: 100px;
+}
+
+.bidir-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.arrow-label-sm {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--accent-primary);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.rev-label {
+    color: #f59e0b !important;
+}
+
+.arrow-enzyme-sm {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    color: var(--text-muted);
+    letter-spacing: 0.3px;
+}
+
+.arrow-track-sm {
+    position: relative;
+    width: 90px;
+    height: 10px;
+    border-top: 1.5px solid rgba(16, 185, 129, 0.4);
+    display: flex;
+    align-items: center;
+}
+
+.arrow-track-rev {
+    border-top: 1.5px solid rgba(245, 158, 11, 0.4);
+}
+
+.arrow-head-fwd {
+    position: absolute;
+    right: -4px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--accent-primary);
+    font-size: 10px;
+}
+
+.arrow-head-rev {
+    position: absolute;
+    left: -4px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #f59e0b;
+    font-size: 10px;
+}
+
+/* Reverse transcription particles (right to left) */
+.arrow-particle-rev {
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    background: #f59e0b;
+    border-radius: 50%;
+    top: 50%;
+    transform: translateY(-50%);
+    animation: flow-rev 2s linear infinite;
+    box-shadow: 0 0 5px #f59e0b;
+}
+
+.p1r { animation-delay: 0s; }
+.p2r { animation-delay: 0.66s; }
+.p3r { animation-delay: 1.33s; }
+
+@keyframes flow-rev {
+    0%   { right: 0%; opacity: 0; }
+    10%  { opacity: 1; }
+    90%  { opacity: 1; }
+    100% { right: 85%; opacity: 0; }
+}
+
+/* Callout flipped for right-side node */
+.node-callout-left {
+    left: auto;
+    right: 50%;
+    transform: translateX(50%) translateY(8px);
+}
+.dogma-node:hover .node-callout-left {
+    transform: translateX(50%) translateY(0);
+}
+
+/* Make nodes compact inside ring */
+.dogma-central .dogma-node {
+    min-width: 100px;
+    padding: 14px 12px 12px;
+}
+
+.dogma-central .node-label {
+    font-size: 14px;
+}
+
+.dogma-central .node-sublabel {
+    font-size: 10px;
+}
+
+/* ATG button inside the ring */
+.dogma-central .start-codon-container {
+    animation: none;
+    opacity: 1;
+    gap: 10px;
+}
+
+.dogma-central .codon-label {
+    font-size: 10px;
+}
+
+.dogma-central #start-codon-btn {
+    padding: 12px 24px;
+    gap: 12px;
+}
+
+.dogma-central .codon-atg {
+    font-size: 22px;
+}
+
+.dogma-central .codon-text {
+    font-size: 11px;
+}
+
+/* Responsive: shrink ring on small screens */
+@media (max-width: 640px) {
+    .orbit-wrapper {
+        width: 340px;
+        height: 340px;
+        transform: scale(0.85);
+        transform-origin: top center;
+    }
+    .satellite span { font-size: 8px; }
+}
+
 /* Background Canvas */
 #network-canvas {
     position: fixed;
@@ -349,32 +922,163 @@ footer {
     font-family: var(--font-mono);
 }
 
-/* Responsive Design */
+/* =========================================
+   RESPONSIVE DESIGN — Full Multi-Breakpoint
+   Supports: Mobile 320px → 4K desktop
+========================================= */
+
+/* --- Hamburger button (hidden on desktop) --- */
+.hamburger-btn {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    z-index: 200;
+}
+
+.hamburger-btn span {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: var(--accent-primary);
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+/* Mobile nav overlay */
+.nav-mobile {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(4, 12, 24, 0.97);
+    z-index: 150;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+}
+
+.nav-mobile.open {
+    display: flex;
+}
+
+.nav-mobile a {
+    font-family: var(--font-mono);
+    font-size: 22px;
+    color: var(--text-main);
+    text-decoration: none;
+    letter-spacing: 3px;
+    transition: color 0.3s;
+}
+
+.nav-mobile a:hover { color: var(--accent-primary); }
+
+.nav-mobile-close {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    background: none;
+    border: none;
+    color: var(--accent-primary);
+    font-size: 28px;
+    cursor: pointer;
+}
+
+/* --- Tablet (≤ 1024px) --- */
+@media (max-width: 1024px) {
+    .name { font-size: 50px; }
+
+    .dogma-flow { gap: 4px; }
+
+    .orbit-wrapper {
+        transform: scale(0.85);
+        transform-origin: top center;
+        margin-bottom: -80px;
+    }
+}
+
+/* --- Small Tablet / Large Mobile (≤ 768px) --- */
 @media (max-width: 768px) {
-    .nav-links {
-        display: none;
+    /* Nav */
+    .nav-links, .contact-btn { display: none; }
+    .hamburger-btn { display: flex; }
+
+    /* Orbital ring — scale down to fit */
+    .orbit-wrapper {
+        transform: scale(0.58);
+        transform-origin: top center;
+        margin-bottom: -240px;
     }
-    
-    .name {
-        font-size: 40px;
+
+    /* Hero */
+    .name { font-size: 38px; }
+    .role-secondary { font-size: 22px; }
+
+    /* Social links wrap */
+    .social-links { flex-wrap: wrap; gap: 10px; }
+
+    /* Sections */
+    .glass-panel { padding: 24px 16px; }
+    main { margin-top: 80px; padding: 0 12px; }
+
+    /* Timeline */
+    .timeline-header { flex-direction: column; align-items: flex-start; gap: 4px; }
+    .timeline-date { margin-top: 0; }
+    .timeline-role { font-size: 16px; }
+
+    /* Publications */
+    .publication-item { flex-direction: column; gap: 4px; }
+    .pub-year { min-width: unset; }
+
+    /* Chat widget */
+    .chat-widget { width: 90vw; right: 5vw; bottom: 10px; }
+
+    /* Dogma title */
+    .dogma-name { font-size: 28px; letter-spacing: 1px; }
+    .dogma-subtitle { font-size: 13px; }
+}
+
+/* --- Mobile (≤ 480px) --- */
+@media (max-width: 480px) {
+    .orbit-wrapper {
+        transform: scale(0.46);
+        transform-origin: top center;
+        margin-bottom: -310px;
     }
-    
-    .role-secondary {
-        font-size: 24px;
+
+    .name { font-size: 30px; }
+    .role-secondary { font-size: 18px; }
+    .greeting { font-size: 16px; }
+
+    .section-title { font-size: 18px; }
+
+    .skill-tag { font-size: 11px; padding: 5px 10px; }
+
+    .timeline-role { font-size: 14px; }
+    .timeline-org { font-size: 13px; }
+
+    .dogma-name { font-size: 22px; }
+
+    .codon-atg { font-size: 18px; }
+    .codon-text { font-size: 10px; }
+
+    .social-btn { font-size: 12px; padding: 6px 10px; }
+    .social-btn svg { width: 16px; height: 16px; }
+}
+
+/* --- Very small mobile (≤ 360px) --- */
+@media (max-width: 360px) {
+    .orbit-wrapper {
+        transform: scale(0.38);
+        transform-origin: top center;
+        margin-bottom: -360px;
     }
-    
-    .timeline-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    
-    .timeline-date {
-        margin-top: 5px;
-    }
-    
-    .glass-panel {
-        padding: 30px 20px;
-    }
+
+    .name { font-size: 26px; }
+    .dogma-name { font-size: 18px; }
 }
 
 /* =========================================

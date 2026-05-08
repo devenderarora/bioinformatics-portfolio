@@ -1,3 +1,111 @@
+// =====================================================
+// CENTRAL DOGMA SPLASH SCREEN
+// =====================================================
+(function() {
+    const splashOverlay = document.getElementById('splash-overlay');
+    const dogmaCanvas   = document.getElementById('dogma-canvas');
+    const dctx          = dogmaCanvas.getContext('2d');
+    const startBtn      = document.getElementById('start-codon-btn');
+
+    // Resize dogma canvas
+    function resizeDogma() {
+        dogmaCanvas.width  = window.innerWidth;
+        dogmaCanvas.height = window.innerHeight;
+    }
+    resizeDogma();
+    window.addEventListener('resize', resizeDogma);
+
+    // Starfield / floating nucleotide background on the dogma canvas
+    const NUCLEOTIDES = ['A', 'T', 'G', 'C', 'U'];
+    const stars = Array.from({ length: 100 }, () => ({
+        x:     Math.random() * window.innerWidth,
+        y:     Math.random() * window.innerHeight,
+        speed: 0.15 + Math.random() * 0.35,
+        size:  10 + Math.random() * 8,
+        alpha: 0.04 + Math.random() * 0.12,
+        char:  NUCLEOTIDES[Math.floor(Math.random() * NUCLEOTIDES.length)]
+    }));
+
+    function animateDogmaBackground() {
+        if (!splashOverlay || splashOverlay.classList.contains('hidden')) return;
+        dctx.clearRect(0, 0, dogmaCanvas.width, dogmaCanvas.height);
+        dctx.font = '14px "Fira Code", monospace';
+
+        for (const s of stars) {
+            dctx.fillStyle = `rgba(16, 185, 129, ${s.alpha})`;
+            dctx.fillText(s.char, s.x, s.y);
+            s.y += s.speed;
+            if (s.y > dogmaCanvas.height + 20) {
+                s.y = -20;
+                s.x = Math.random() * dogmaCanvas.width;
+                s.char = NUCLEOTIDES[Math.floor(Math.random() * NUCLEOTIDES.length)];
+            }
+        }
+        requestAnimationFrame(animateDogmaBackground);
+    }
+    animateDogmaBackground();
+
+    // Dismiss splash on ATG click
+    startBtn.addEventListener('click', () => {
+        startBtn.textContent = '> Translating...';
+        startBtn.style.color = '#10b981';
+        setTimeout(() => {
+            splashOverlay.classList.add('hidden');
+            document.body.style.overflow = '';
+        }, 600);
+    });
+
+    // Prevent scrolling while splash is visible
+    document.body.style.overflow = 'hidden';
+    splashOverlay.addEventListener('transitionend', () => {
+        if (splashOverlay.classList.contains('hidden')) {
+            splashOverlay.style.display = 'none';
+        }
+    });
+})();
+
+// =====================================================
+// MOBILE NAV — Hamburger Menu
+// =====================================================
+const hamburgerBtn  = document.getElementById('hamburger-btn');
+const navMobile     = document.getElementById('nav-mobile');
+const navMobileClose = document.getElementById('nav-mobile-close');
+
+function openNav() {
+    navMobile.classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+function closeNav() {
+    navMobile.classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+if (hamburgerBtn)   hamburgerBtn.addEventListener('click', openNav);
+if (navMobileClose) navMobileClose.addEventListener('click', closeNav);
+
+// =====================================================
+// DA LOGO — Return to Central Dogma Splash
+// =====================================================
+const daLogoLink = document.querySelector('.logo');
+if (daLogoLink) {
+    daLogoLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        const splash = document.getElementById('splash-overlay');
+        if (splash) {
+            splash.style.display = 'flex';   // make it visible again
+            // Force reflow so the transition fires
+            splash.offsetHeight;
+            splash.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            // Scroll portfolio back to top silently
+            window.scrollTo({ top: 0 });
+        }
+    });
+}
+
+// =====================================================
+// MAIN PORTFOLIO CANVAS
+// =====================================================
 const canvas = document.getElementById('network-canvas');
 const ctx = canvas.getContext('2d');
 

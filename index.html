@@ -14,6 +14,181 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
+    <!-- CENTRAL DOGMA SPLASH SCREEN -->
+    <div id="splash-overlay">
+        <canvas id="dogma-canvas"></canvas>
+
+        <div class="dogma-ui">
+            <div class="dogma-title">
+                <span class="dogma-greeting">// Initializing biological sequence...</span>
+                <h1 class="dogma-name">Dr. Devender Arora</h1>
+                <p class="dogma-subtitle">Senior Bioinformatics Scientist</p>
+            </div>
+
+            <!-- Orbital Multi-Omics Ring -->
+            <div class="orbit-wrapper">
+
+                <!-- SVG orbital ring with dashed circle -->
+                <svg class="orbit-ring-svg" viewBox="0 0 580 580" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Main dashed orbit ring -->
+                    <circle cx="290" cy="290" r="255" stroke="rgba(16,185,129,0.25)" stroke-width="1.5" stroke-dasharray="10 7" fill="none"/>
+                    <!-- Glow ring -->
+                    <circle cx="290" cy="290" r="255" stroke="rgba(16,185,129,0.06)" stroke-width="12" fill="none"/>
+                    <!-- Connector lines from satellites to center -->
+                    <line x1="290" y1="35"  x2="290" y2="170" stroke="rgba(16,185,129,0.1)" stroke-width="1" stroke-dasharray="4 4"/>
+                    <line x1="540" y1="168" x2="380" y2="220" stroke="rgba(6,182,212,0.1)"  stroke-width="1" stroke-dasharray="4 4"/>
+                    <line x1="540" y1="412" x2="380" y2="310" stroke="rgba(245,158,11,0.1)" stroke-width="1" stroke-dasharray="4 4"/>
+                    <line x1="40"  y1="412" x2="200" y2="310" stroke="rgba(236,72,153,0.1)" stroke-width="1" stroke-dasharray="4 4"/>
+                    <line x1="40"  y1="168" x2="200" y2="220" stroke="rgba(139,92,246,0.1)" stroke-width="1" stroke-dasharray="4 4"/>
+                </svg>
+
+                <!-- Satellite: Spatial Transcriptomics (top) -->
+                <div class="satellite sat-top" style="left:290px;top:35px;">
+                    <div class="sat-dot" style="background:#10b981;"></div>
+                    <span>Spatial TX</span>
+                </div>
+
+                <!-- Satellite: Metabolomics (top-right) -->
+                <div class="satellite sat-tr" style="left:540px;top:168px;">
+                    <div class="sat-dot" style="background:#06b6d4;"></div>
+                    <span>Metabolomics</span>
+                </div>
+
+                <!-- Satellite: Epigenomics (bottom-right) -->
+                <div class="satellite sat-br" style="left:540px;top:412px;">
+                    <div class="sat-dot" style="background:#f59e0b;"></div>
+                    <span>Epigenomics</span>
+                </div>
+
+                <!-- Satellite: Metagenomics (bottom-left) -->
+                <div class="satellite sat-bl" style="left:40px;top:412px;">
+                    <div class="sat-dot" style="background:#ec4899;"></div>
+                    <span>Metagenomics</span>
+                </div>
+
+                <!-- Satellite: scRNA-seq (top-left) -->
+                <div class="satellite sat-tl" style="left:40px;top:168px;">
+                    <div class="sat-dot" style="background:#8b5cf6;"></div>
+                    <span>scRNA-seq</span>
+                </div>
+
+                <!-- Central Dogma (center of ring) -->
+                <div class="dogma-central">
+                    <div class="orbit-center-label">Multi-Omics Integration</div>
+
+                    <div class="dogma-flow">
+                        <!-- DNA Node -->
+                        <div class="dogma-node" id="node-dna">
+                            <div class="node-icon dna-icon">
+                                <svg viewBox="0 0 40 80" width="36" height="72">
+                                    <path d="M5,5 Q35,20 5,40 Q35,60 5,75" stroke="#10b981" stroke-width="2" fill="none"/>
+                                    <path d="M35,5 Q5,20 35,40 Q5,60 35,75" stroke="#06b6d4" stroke-width="2" fill="none"/>
+                                    <line x1="10" y1="15" x2="30" y2="15" stroke="rgba(255,255,255,0.35)" stroke-width="1.5"/>
+                                    <line x1="8"  y1="27" x2="32" y2="27" stroke="rgba(255,255,255,0.35)" stroke-width="1.5"/>
+                                    <line x1="10" y1="39" x2="30" y2="39" stroke="rgba(255,255,255,0.35)" stroke-width="1.5"/>
+                                    <line x1="8"  y1="51" x2="32" y2="51" stroke="rgba(255,255,255,0.35)" stroke-width="1.5"/>
+                                    <line x1="10" y1="63" x2="30" y2="63" stroke="rgba(255,255,255,0.35)" stroke-width="1.5"/>
+                                </svg>
+                            </div>
+                            <div class="node-label">DNA</div>
+                            <div class="node-sublabel">The Blueprint</div>
+                            <div class="node-callout">
+                                <strong>📚 The Foundation</strong>
+                                <p>Ph.D. in Biotechnology (Bioinformatics). Expert in WGS, WGBS, variant calling (GATK), and genomic analysis across species.</p>
+                            </div>
+                        </div>
+
+                        <!-- Bidirectional arrow DNA ↔ RNA -->
+                        <div class="bidir-arrow-block">
+                            <!-- Forward: Transcription -->
+                            <div class="bidir-row forward-row">
+                                <div class="arrow-label-sm">Transcription</div>
+                                <div class="arrow-track-sm">
+                                    <div class="arrow-particle p1"></div>
+                                    <div class="arrow-particle p2"></div>
+                                    <div class="arrow-particle p3"></div>
+                                    <div class="arrow-head-fwd">▶</div>
+                                </div>
+                                <div class="arrow-enzyme-sm">RNA Pol II</div>
+                            </div>
+                            <!-- Reverse: Reverse Transcription -->
+                            <div class="bidir-row reverse-row">
+                                <div class="arrow-label-sm rev-label">Reverse Transcription</div>
+                                <div class="arrow-track-sm arrow-track-rev">
+                                    <div class="arrow-particle-rev p1r"></div>
+                                    <div class="arrow-particle-rev p2r"></div>
+                                    <div class="arrow-particle-rev p3r"></div>
+                                    <div class="arrow-head-rev">◀</div>
+                                </div>
+                                <div class="arrow-enzyme-sm rev-label">Reverse Transcriptase</div>
+                            </div>
+                        </div>
+
+                        <!-- RNA Node -->
+                        <div class="dogma-node" id="node-rna">
+                            <div class="node-icon rna-icon">
+                                <svg viewBox="0 0 70 40" width="64" height="36">
+                                    <path d="M2,20 Q10,5 18,20 Q26,35 34,20 Q42,5 50,20 Q58,35 66,20" stroke="#06b6d4" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                                    <line x1="10" y1="12" x2="10" y2="20" stroke="rgba(6,182,212,0.6)" stroke-width="1.5"/>
+                                    <line x1="26" y1="28" x2="26" y2="20" stroke="rgba(6,182,212,0.6)" stroke-width="1.5"/>
+                                    <line x1="42" y1="12" x2="42" y2="20" stroke="rgba(6,182,212,0.6)" stroke-width="1.5"/>
+                                </svg>
+                            </div>
+                            <div class="node-label">mRNA</div>
+                            <div class="node-sublabel">The Message</div>
+                            <div class="node-callout">
+                                <strong>🧬 Transcriptomics</strong>
+                                <p>Expert in RNA-seq, scRNA-seq, Spatial Transcriptomics, and differential gene expression across complex biological systems.</p>
+                            </div>
+                        </div>
+
+                        <!-- Forward arrow: Translation -->
+                        <div class="dogma-arrow" id="arrow-translation">
+                            <div class="arrow-label">Translation</div>
+                            <div class="arrow-track">
+                                <div class="arrow-particle p1"></div>
+                                <div class="arrow-particle p2"></div>
+                                <div class="arrow-particle p3"></div>
+                                <div class="arrow-head">▶</div>
+                            </div>
+                            <div class="arrow-enzyme">Ribosome</div>
+                        </div>
+
+                        <!-- Proteomics Node -->
+                        <div class="dogma-node" id="node-protein">
+                            <div class="node-icon protein-icon">
+                                <svg viewBox="0 0 70 70" width="60" height="60">
+                                    <circle cx="25" cy="28" r="14" stroke="#8b5cf6" stroke-width="2" fill="rgba(139,92,246,0.15)"/>
+                                    <circle cx="42" cy="22" r="16" stroke="#8b5cf6" stroke-width="2" fill="rgba(139,92,246,0.15)"/>
+                                    <circle cx="30" cy="42" r="13" stroke="#8b5cf6" stroke-width="2" fill="rgba(139,92,246,0.15)"/>
+                                    <circle cx="46" cy="40" r="11" stroke="#8b5cf6" stroke-width="2" fill="rgba(139,92,246,0.15)"/>
+                                </svg>
+                            </div>
+                            <div class="node-label">Proteomics</div>
+                            <div class="node-sublabel">The Function</div>
+                            <div class="node-callout node-callout-left">
+                                <strong>⚙️ Proteomics & Multi-Omics</strong>
+                                <p>Proteomics (DDA/DIA), Metabolomics, and multi-omics integration using DIABLO, MOFA, and IntegrAO at Purdue University.</p>
+                            </div>
+                        </div>
+                    </div><!-- end dogma-flow -->
+
+                    <!-- ATG Button inside the ring -->
+                    <div class="start-codon-container">
+                        <div class="codon-label">// Start codon detected — Multi-Omics sequence ready</div>
+                        <button id="start-codon-btn">
+                            <span class="codon-atg">ATG</span>
+                            <span class="codon-text">INITIATE SEQUENCE — Enter Portfolio</span>
+                        </button>
+                        <div class="codon-hint">hover molecules to explore · click ATG to enter</div>
+                    </div>
+
+                </div><!-- end dogma-central -->
+            </div><!-- end orbit-wrapper -->
+        </div><!-- end dogma-ui -->
+    </div><!-- end splash-overlay -->
+
     <!-- Interactive Canvas Background -->
     <canvas id="network-canvas"></canvas>
 
@@ -28,8 +203,22 @@
                 <a href="#publications">Publications</a>
             </div>
             <a href="mailto:devarora@hotmail.com" class="contact-btn">devarora@hotmail.com</a>
+            <!-- Hamburger for mobile -->
+            <button class="hamburger-btn" id="hamburger-btn" aria-label="Open menu">
+                <span></span><span></span><span></span>
+            </button>
         </div>
     </nav>
+
+    <!-- Mobile nav overlay -->
+    <div class="nav-mobile" id="nav-mobile">
+        <button class="nav-mobile-close" id="nav-mobile-close" aria-label="Close menu">✕</button>
+        <a href="#about"   onclick="closeNav()">About</a>
+        <a href="#skills"  onclick="closeNav()">Skills</a>
+        <a href="#career"  onclick="closeNav()">Career</a>
+        <a href="#publications" onclick="closeNav()">Publications</a>
+        <a href="mailto:devarora@hotmail.com" style="color:var(--accent-secondary);font-size:14px;">devarora@hotmail.com</a>
+    </div>
 
     <main>
         <!-- Hero Section -->
