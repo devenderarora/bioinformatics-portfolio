@@ -137,6 +137,49 @@ window.addEventListener('resize', rescaleSatellites);
 rescaleSatellites();
 
 // =====================================================
+// BIO RIDDLE WIDGET
+// =====================================================
+const riddles = [
+    { q: "I carry the blueprint but never leave the vault. What am I?", a: "DNA" },
+    { q: "I translate the message into function, reading three at a time. What am I?", a: "Ribosome" },
+    { q: "I silence genes without changing the code, adding tags to the text. What am I?", a: "Epigenetics (DNA Methylation)" },
+    { q: "I cut exactly where you tell me, a bacterial immune system repurposed. What am I?", a: "CRISPR-Cas9" },
+    { q: "I am the sum of all transcripts, a snapshot of cellular intent. What am I?", a: "Transcriptome" },
+    { q: "I find the hidden similarities, aligning sequences locally or globally. What am I?", a: "BLAST (or Alignment Algorithm)" }
+];
+
+let currentRiddleIndex = 0;
+const questionEl = document.getElementById('riddle-question');
+const answerEl = document.getElementById('riddle-answer');
+const counterEl = document.getElementById('riddle-counter');
+const revealBtn = document.getElementById('riddle-reveal-btn');
+const nextBtn = document.getElementById('riddle-next-btn');
+
+function updateRiddle() {
+    if (!questionEl) return;
+    questionEl.textContent = riddles[currentRiddleIndex].q;
+    answerEl.textContent = riddles[currentRiddleIndex].a;
+    answerEl.classList.remove('visible');
+    counterEl.textContent = `${currentRiddleIndex + 1} / ${riddles.length}`;
+}
+
+if (revealBtn) {
+    revealBtn.addEventListener('click', () => {
+        answerEl.classList.add('visible');
+    });
+}
+
+if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+        currentRiddleIndex = (currentRiddleIndex + 1) % riddles.length;
+        updateRiddle();
+    });
+}
+
+// Initialize first riddle
+updateRiddle();
+
+// =====================================================
 // MAIN PORTFOLIO CANVAS
 // =====================================================
 const canvas = document.getElementById('network-canvas');
