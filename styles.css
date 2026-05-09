@@ -66,10 +66,11 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0px; /* Reduced from 20px to pull the ring closer to the text */
+    justify-content: center; /* Center the whole layout vertically on the screen */
+    gap: 0px; 
     width: 100%;
     min-height: 100%;
-    padding: 10px 20px 20px; /* Reduced top/bottom padding */
+    padding: 10px 20px 20px;
 }
 
 /* Title block */
@@ -477,8 +478,8 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    /* 8% padding-top pulls nodes high enough to fit riddle and ATG button cleanly inside the new 500px ring */
-    padding: 8% 12px 16px;
+    /* 16% padding-top pushes nodes back down so they don't overlap MULTI-OMICS text, while still fitting in the ring */
+    padding: 16% 12px 16px;
     gap: 8px; /* Tighter gap between rows */
     overflow: visible;
 }
