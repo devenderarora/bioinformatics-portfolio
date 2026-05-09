@@ -145,7 +145,11 @@ const riddles = [
     { q: "I silence genes without changing the code, adding tags to the text. What am I?", a: "Epigenetics (DNA Methylation)" },
     { q: "I cut exactly where you tell me, a bacterial immune system repurposed. What am I?", a: "CRISPR-Cas9" },
     { q: "I am the sum of all transcripts, a snapshot of cellular intent. What am I?", a: "Transcriptome" },
-    { q: "I find the hidden similarities, aligning sequences locally or globally. What am I?", a: "BLAST (or Alignment Algorithm)" }
+    { q: "I find the hidden similarities, aligning sequences locally or globally. What am I?", a: "BLAST" },
+    { q: "I measure the mass-to-charge ratio of flying ions. What am I?", a: "Mass Spectrometer" },
+    { q: "I map the 3D folding of genomes inside the nucleus. What am I?", a: "Hi-C (Chromosome Conformation Capture)" },
+    { q: "I assemble short reads back into a complete genome puzzle. What am I?", a: "De Bruijn Graph (or Genome Assembler)" },
+    { q: "I separate cellular noise to profile single cells one by one. What am I?", a: "scRNA-seq (Single-cell RNA sequencing)" }
 ];
 
 let currentRiddleIndex = 0;

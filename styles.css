@@ -387,8 +387,8 @@ body {
 /* Orbital ring wrapper */
 .orbit-wrapper {
     position: relative;
-    width: 500px; /* Reduced from 580px to fit low-res screens */
-    height: 500px;
+    width: 540px; /* Increased from 500px to fill more screen space */
+    height: 540px;
     flex-shrink: 0;
     animation: fadeIn 1.2s ease 0.4s forwards;
     opacity: 0;
