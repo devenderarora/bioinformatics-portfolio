@@ -1562,3 +1562,655 @@ footer {
 #chat-send-btn:hover {
     background: rgba(16, 185, 129, 0.3);
 }
+
+/* =========================================
+   SEQUENCE ANALYZER MODAL
+========================================= */
+.seq-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(4, 8, 16, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10005;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    padding: 20px;
+}
+
+.seq-modal.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.seq-modal-content {
+    background: rgba(9, 17, 30, 0.96);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 950px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 50px rgba(16, 185, 129, 0.05);
+    overflow: hidden;
+    animation: modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes modalSlideUp {
+    from { transform: translateY(40px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.seq-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(15, 27, 46, 0.4);
+}
+
+.seq-modal-header h3 {
+    font-family: var(--font-sans);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-main);
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.seq-modal-subtitle {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.seq-modal-close {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 28px;
+    cursor: pointer;
+    transition: color 0.2s;
+    line-height: 1;
+}
+
+.seq-modal-close:hover {
+    color: #ef4444;
+}
+
+/* Tabs */
+.seq-modal-tabs {
+    display: flex;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(15, 27, 46, 0.2);
+}
+
+.seq-tab-btn {
+    flex: 1;
+    padding: 14px 20px;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.seq-tab-btn:hover {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.seq-tab-btn.active {
+    color: var(--text-main);
+}
+
+.seq-tab-btn[data-tab="dna"].active { border-color: #10b981; background: rgba(16, 185, 129, 0.04); }
+.seq-tab-btn[data-tab="rna"].active { border-color: #06b6d4; background: rgba(6, 182, 212, 0.04); }
+.seq-tab-btn[data-tab="protein"].active { border-color: #8b5cf6; background: rgba(139, 92, 246, 0.04); }
+
+/* Body */
+.seq-modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.seq-tab-content {
+    display: none;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.seq-tab-content.active {
+    display: flex;
+}
+
+/* Inputs & Labels */
+.input-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.input-section label {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+}
+
+.input-section textarea {
+    width: 100%;
+    height: 100px;
+    background: rgba(4, 8, 16, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 12px;
+    color: var(--text-main);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    resize: none;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.input-section textarea:focus {
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Presets */
+.presets {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.presets span {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+}
+
+.preset-btn {
+    font-size: 11px;
+    font-family: var(--font-sans);
+    padding: 4px 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.preset-btn:hover {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Action Buttons */
+.analyze-action-btn {
+    align-self: flex-start;
+    padding: 10px 24px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.dna-theme-btn { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+.dna-theme-btn:hover { background: #10b981; color: #040c18; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
+
+.rna-theme-btn { background: rgba(6, 182, 212, 0.15); color: #06b6d4; border: 1px solid rgba(6, 182, 212, 0.3); }
+.rna-theme-btn:hover { background: #06b6d4; color: #040c18; box-shadow: 0 0 15px rgba(6, 182, 212, 0.4); }
+
+.protein-theme-btn { background: rgba(139, 92, 246, 0.15); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.3); }
+.protein-theme-btn:hover { background: #8b5cf6; color: #040c18; box-shadow: 0 0 15px rgba(139, 92, 246, 0.4); }
+
+/* Results section */
+.results-section {
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    animation: fadeIn 0.4s ease forwards;
+}
+
+.results-section.hidden {
+    display: none !important;
+}
+
+.results-section h4 {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-main);
+    font-family: var(--font-mono);
+}
+
+.results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.result-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 14px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.result-card h5 {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+}
+
+.result-val {
+    font-size: 22px;
+    font-weight: 700;
+    font-family: var(--font-mono);
+}
+
+#results-dna .result-val { color: #10b981; }
+#results-rna .result-val { color: #06b6d4; }
+#results-protein-seq .result-val { color: #8b5cf6; }
+
+/* GC progress bar */
+.gc-progress-container {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.gc-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #06b6d4);
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+}
+
+/* Full cards */
+.result-full-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.result-full-card h5 {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.seq-display {
+    background: rgba(4, 8, 16, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 6px;
+    padding: 12px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.6;
+    word-break: break-all;
+    max-height: 120px;
+    overflow-y: auto;
+    color: var(--text-main);
+}
+
+/* Protein codons colors based on biochemical properties */
+.protein-seq-display span.aa-hydrophobic { color: #f59e0b; font-weight: bold; } /* non-polar */
+.protein-seq-display span.aa-acidic { color: #ef4444; font-weight: bold; }     /* negative */
+.protein-seq-display span.aa-basic { color: #3b82f6; font-weight: bold; }      /* positive */
+.protein-seq-display span.aa-polar { color: #10b981; font-weight: bold; }      /* neutral polar */
+.protein-seq-display span.aa-special { color: #ec4899; }                       /* C, G, P */
+
+/* Protein type selector (Sequence vs PDB) */
+.protein-type-selector {
+    display: flex;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.02);
+    padding: 4px;
+    border-radius: 8px;
+    align-self: flex-start;
+}
+
+.type-btn {
+    padding: 6px 16px;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.type-btn.active {
+    background: rgba(139, 92, 246, 0.15);
+    color: #8b5cf6;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.protein-mode-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.protein-mode-section.hidden {
+    display: none !important;
+}
+
+/* Composition bar chart */
+.composition-bar-container {
+    display: flex;
+    height: 24px;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-top: 4px;
+}
+
+.comp-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-family: var(--font-mono);
+    color: #fff;
+    font-weight: 700;
+    transition: width 0.5s ease;
+}
+
+.comp-acidic { background: #ef4444; }
+.comp-basic { background: #3b82f6; }
+.comp-polar { background: #10b981; }
+.comp-hydrophobic { background: #f59e0b; }
+
+.comp-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 4px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.legend-color {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+}
+
+.legend-color.acidic { background: #ef4444; }
+.legend-color.basic { background: #3b82f6; }
+.legend-color.polar { background: #10b981; }
+.legend-color.hydrophobic { background: #f59e0b; }
+
+/* Explanation layout */
+.explanation-card {
+    border-left: 3px solid rgba(255, 255, 255, 0.1);
+}
+
+#dna-explanation, #rna-explanation, #protein-explanation {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* RNA Stem loops */
+.stem-loop-visual {
+    background: rgba(4, 8, 16, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 6px;
+    padding: 16px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: #06b6d4;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    line-height: 1.5;
+}
+
+/* Phosphorylation Sites predictor */
+.phospho-list-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.phospho-summary {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.phospho-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 6px;
+    font-size: 12px;
+    font-family: var(--font-mono);
+    color: var(--text-main);
+    text-align: left;
+}
+
+.phospho-table th, .phospho-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.phospho-table th {
+    color: var(--text-muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.phospho-table tbody tr:hover {
+    background: rgba(139, 92, 246, 0.04);
+}
+
+.phospho-site-s { color: #10b981; font-weight: bold; }
+.phospho-site-t { color: #06b6d4; font-weight: bold; }
+.phospho-site-y { color: #8b5cf6; font-weight: bold; }
+
+/* PDB Mode Layout */
+.pdb-input-row {
+    display: flex;
+    gap: 12px;
+}
+
+.pdb-input-row input {
+    background: rgba(4, 8, 16, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text-main);
+    font-family: var(--font-mono);
+    font-size: 14px;
+    text-transform: uppercase;
+    outline: none;
+    width: 120px;
+    text-align: center;
+    letter-spacing: 2px;
+}
+
+.pdb-viewer-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 20px;
+}
+
+.pdb-info-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.pdb-info-panel h5 {
+    font-size: 13px;
+    color: var(--text-main);
+    line-height: 1.4;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding-bottom: 10px;
+}
+
+.pdb-info-table {
+    width: 100%;
+    font-size: 12px;
+    border-collapse: collapse;
+}
+
+.pdb-info-table td {
+    padding: 6px 0;
+    vertical-align: top;
+}
+
+.pdb-info-table td:first-child {
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    width: 100px;
+}
+
+.pdb-info-table td:last-child {
+    font-weight: 600;
+}
+
+.pdb-citation h6 {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.pdb-citation p {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.4;
+    margin: 0;
+}
+
+.pdb-3d-panel {
+    border-radius: 8px;
+    overflow: hidden;
+    background: #09111e;
+    height: 380px;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.pdb-loader {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #09111e;
+    z-index: 2;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.pdb-loader.hidden {
+    display: none;
+}
+
+#pdb-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    position: relative;
+    z-index: 1;
+}
+
+/* Tooltip click instruction styling */
+.analyze-hint {
+    display: block;
+    margin-top: 10px;
+    font-size: 10px;
+    color: var(--accent-primary);
+    font-family: var(--font-mono);
+    text-align: center;
+    border-top: 1px dashed rgba(255, 255, 255, 0.1);
+    padding-top: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    animation: flashHint 2s infinite alternate;
+}
+
+#node-rna .analyze-hint { color: var(--accent-secondary); }
+#node-protein .analyze-hint { color: #8b5cf6; }
+
+@keyframes flashHint {
+    from { opacity: 0.5; }
+    to { opacity: 1; text-shadow: 0 0 4px currentColor; }
+}
+
+/* Mobile responsive fixes */
+@media (max-width: 768px) {
+    .pdb-viewer-layout {
+        grid-template-columns: 1fr;
+    }
+    .seq-modal-content {
+        max-height: 95vh;
+    }
+    .pdb-3d-panel {
+        height: 280px;
+    }
+    .seq-modal {
+        padding: 10px;
+    }
+}
+

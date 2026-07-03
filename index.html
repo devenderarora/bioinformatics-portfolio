@@ -114,6 +114,7 @@
                                 <strong>📚 The Foundation</strong>
                                 <p>Ph.D. in Biotechnology (Bioinformatics). Expert in WGS, WGBS, variant calling (GATK),
                                     and genomic analysis across species.</p>
+                                <div class="analyze-hint">Click node to analyze DNA sequences</div>
                             </div>
                         </div>
 
@@ -163,6 +164,7 @@
                                 <strong>🧬 Transcriptomics</strong>
                                 <p>Expert in RNA-seq, scRNA-seq, Spatial Transcriptomics, and differential gene
                                     expression across complex biological systems.</p>
+                                <div class="analyze-hint">Click node to analyze RNA sequences</div>
                             </div>
                         </div>
 
@@ -198,6 +200,7 @@
                                 <strong>⚙️ Proteomics & Multi-Omics</strong>
                                 <p>Proteomics (DDA/DIA) (targeted, and untargeted), Metabolomics, and multi-omics
                                     integration using DIABLO, MOFA, and IntegrAO at Purdue University.</p>
+                                <div class="analyze-hint">Click node to analyze protein & PDB structures</div>
                             </div>
                         </div>
                     </div><!-- end dogma-flow -->
@@ -224,6 +227,235 @@
                             <span class="codon-text">INITIATE SEQUENCE — Enter Portfolio</span>
                         </button>
                         <div class="codon-hint">hover molecules to explore · click ATG to enter</div>
+                    </div>
+
+                    <!-- Sequence Analyzer Modal -->
+                    <div id="seq-analyzer-modal" class="seq-modal hidden">
+                        <div class="seq-modal-content">
+                            <div class="seq-modal-header">
+                                <div>
+                                    <h3>🧬 Sequence & Structure Analyzer</h3>
+                                    <p class="seq-modal-subtitle">Interactive molecular decoding, 3D structure visualization, and PTM prediction</p>
+                                </div>
+                                <button class="seq-modal-close" id="seq-modal-close-btn">&times;</button>
+                            </div>
+                            
+                            <div class="seq-modal-tabs">
+                                <button class="seq-tab-btn active" data-tab="dna">DNA Analysis</button>
+                                <button class="seq-tab-btn" data-tab="rna">RNA Analysis</button>
+                                <button class="seq-tab-btn" data-tab="protein">Protein & PDB</button>
+                            </div>
+
+                            <div class="seq-modal-body">
+                                <!-- DNA Tab Content -->
+                                <div class="seq-tab-content active" id="tab-dna">
+                                    <div class="input-section">
+                                        <label for="dna-input">Enter DNA Sequence (A, T, C, G):</label>
+                                        <textarea id="dna-input" placeholder="e.g., ATGGTGCATCTGACTCCTGAGGAGAAGTCTGCCGTTACTGCCCTGTGGGGCAAGGTG..."></textarea>
+                                        <div class="presets">
+                                            <span>Presets:</span>
+                                            <button class="preset-btn" data-type="dna" data-seq="ATGGTGCATCTGACTCCTGAGGAGAAGTCTGCCGTTACTGCCCTGTGGGGCAAGGTGAACGTGGATGAAGTTGGTGGTGAGGCCCTGGGCAG">Insulin Segment</button>
+                                            <button class="preset-btn" data-type="dna" data-seq="ATGTTTGTTTTTCTTGTTTTATTGCCACTAGTCTCTAGTCAGTGTGTTAATCTTACAACCAGAACTCAATTACCCCCTGCATACACTAATTC">COVID Spike Seg</button>
+                                            <button class="preset-btn" data-type="dna" data-seq="ATGAGTAAAGGAGAAGAACTTTTCACTGGAGTTGTCCCAATTCTTGTTGAATTAGATGGTGATGTTAATGGGCACAAATTTTCTGTCAGTGGA">GFP Promoter Seg</button>
+                                        </div>
+                                        <button class="analyze-action-btn dna-theme-btn" id="analyze-dna-btn">Run DNA Analysis</button>
+                                    </div>
+                                    <div class="results-section hidden" id="results-dna">
+                                        <h4>Analysis Results</h4>
+                                        <div class="results-grid">
+                                            <div class="result-card">
+                                                <h5>GC Content</h5>
+                                                <div class="gc-progress-container">
+                                                    <div class="gc-progress-bar" id="dna-gc-bar" style="width: 0%"></div>
+                                                </div>
+                                                <span class="result-val" id="dna-gc-val">0%</span>
+                                            </div>
+                                            <div class="result-card">
+                                                <h5>Sequence Length</h5>
+                                                <span class="result-val" id="dna-len-val">0 bp</span>
+                                            </div>
+                                        </div>
+                                        <div class="result-full-card">
+                                            <h5>Transcribed mRNA (DNA ➔ RNA)</h5>
+                                            <div class="seq-display" id="dna-transcribe-display"></div>
+                                        </div>
+                                        <div class="result-full-card">
+                                            <h5>Translated Protein (RNA ➔ Amino Acids)</h5>
+                                            <div class="seq-display protein-seq-display" id="dna-translate-display"></div>
+                                        </div>
+                                        <div class="result-full-card explanation-card">
+                                            <h5>Biological Interpretation</h5>
+                                            <p id="dna-explanation"></p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- RNA Tab Content -->
+                                <div class="seq-tab-content" id="tab-rna">
+                                    <div class="input-section">
+                                        <label for="rna-input">Enter RNA Sequence (A, U, C, G):</label>
+                                        <textarea id="rna-input" placeholder="e.g., AUGGUGCACCUGACUCCUGAGGAGAAG..."></textarea>
+                                        <div class="presets">
+                                            <span>Presets:</span>
+                                            <button class="preset-btn" data-type="rna" data-seq="GGGGUGUAGCUCAGUGGUAGAGCGCGUGCUUAGCAUGCACGAGGCCCUGGGUUCGAUCCCCCGCACCCCA">tRNA Anticodon Loop</button>
+                                            <button class="preset-btn" data-type="rna" data-seq="AUGUUCGUGUUCCUGGUGCUGCUGCCUCUGGUGUCCAGCCAGUGCGUGAACCUGACCACCAGAACACAGC">mRNA Vaccine Seg</button>
+                                            <button class="preset-btn" data-type="rna" data-seq="GGGCACUCAUGUAGCUUACGCAUCGCUGAGUACCAAAGUCGCUUAACAGCACAAGGGCA">Riboswitch Element</button>
+                                        </div>
+                                        <button class="analyze-action-btn rna-theme-btn" id="analyze-rna-btn">Run RNA Analysis</button>
+                                    </div>
+                                    <div class="results-section hidden" id="results-rna">
+                                        <h4>Analysis Results</h4>
+                                        <div class="results-grid">
+                                            <div class="result-card">
+                                                <h5>Estimated Molecular Weight</h5>
+                                                <span class="result-val" id="rna-mw-val">0 kDa</span>
+                                            </div>
+                                            <div class="result-card">
+                                                <h5>Sequence Length</h5>
+                                                <span class="result-val" id="rna-len-val">0 nt</span>
+                                            </div>
+                                        </div>
+                                        <div class="result-full-card">
+                                            <h5>Predicted Secondary Structure (Stem-loops)</h5>
+                                            <div class="stem-loop-visual" id="rna-structure-display"></div>
+                                        </div>
+                                        <div class="result-full-card explanation-card">
+                                            <h5>Biological Interpretation</h5>
+                                            <p id="rna-explanation"></p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Protein/PDB Tab Content -->
+                                <div class="seq-tab-content" id="tab-protein">
+                                    <div class="protein-type-selector">
+                                        <button class="type-btn active" id="type-btn-seq">Amino Acid Sequence</button>
+                                        <button class="type-btn" id="type-btn-pdb">PDB 3D Structure</button>
+                                    </div>
+
+                                    <!-- Protein Sequence Mode -->
+                                    <div class="protein-mode-section" id="mode-protein-seq">
+                                        <div class="input-section">
+                                            <label for="protein-input">Enter Amino Acid Sequence:</label>
+                                            <textarea id="protein-input" placeholder="e.g., MVHLTPEEKSAVTALWGKVNVDEVGGEALGR..."></textarea>
+                                            <div class="presets">
+                                                <span>Presets:</span>
+                                                <button class="preset-btn" data-type="protein" data-seq="MSKGEELFTGVVPILVELDGDVNGHKFSVSGEGEGDATYGKLTLKFICTTGKLPVPWPTLVTTFSYGVQCFSRYPDHMKQHDFFKSAMPEGYVQERTIFFKDDGNYKTRAEVKFEGDTLVNRIELKGIDFKEDGNILGHKLEYNYNSHNVYIMADKQKNGIKVNFKIRHNIEDGSVQLADHYQQNTPIGDGPVLLPDNHYLSTQSALSKDPNEKRDHMVLLEFVTAAGITHGMDELYK">GFP Sequence</button>
+                                                <button class="preset-btn" data-type="protein" data-seq="MVHLTPEEKSAVTALWGKVNVDEVGGEALGRLLVVYPWTQRFFESFGDLSTPDAVMGNPKVKAHGKKVLGAFSDGLAHLDNLKGTFATLSELHCDKLHVDPENFRLLGNVLVCVLAHHFGKEFTPPVQAAYQKVVAGVANALAHKYH">Hemoglobin Beta</button>
+                                                <button class="preset-btn" data-type="protein" data-seq="MGLSDGEWQLVLNVWGKVEADIPGHGQEVLIRLFKGHPETLEKFDKFKHLKSEDEMKASEDLKKHGATVLTALGGILKKKGHHEAEIKPLAQSHATKHKIPVKYLEFISECIIQVLQSKHPGDFGADAQGAMNKALELFRKDMASNYKELGFQG">Myoglobin</button>
+                                            </div>
+                                            <button class="analyze-action-btn protein-theme-btn" id="analyze-protein-btn">Analyze Protein</button>
+                                        </div>
+                                        <div class="results-section hidden" id="results-protein-seq">
+                                            <h4>Analysis Results</h4>
+                                            <div class="results-grid">
+                                                <div class="result-card">
+                                                    <h5>Estimated Isoelectric Point (pI)</h5>
+                                                    <span class="result-val" id="protein-pi-val">7.00</span>
+                                                </div>
+                                                <div class="result-card">
+                                                    <h5>GRAVY Score (Hydropathy)</h5>
+                                                    <span class="result-val" id="protein-gravy-val">0.00</span>
+                                                </div>
+                                            </div>
+                                            <div class="result-full-card">
+                                                <h5>Charge & Composition Profile</h5>
+                                                <div class="composition-bar-container">
+                                                    <div class="comp-bar comp-acidic" id="comp-acidic-bar" style="width: 25%"></div>
+                                                    <div class="comp-bar comp-basic" id="comp-basic-bar" style="width: 25%"></div>
+                                                    <div class="comp-bar comp-polar" id="comp-polar-bar" style="width: 25%"></div>
+                                                    <div class="comp-bar comp-hydrophobic" id="comp-hydrophobic-bar" style="width: 25%"></div>
+                                                </div>
+                                                <div class="comp-legend">
+                                                    <span class="legend-item"><span class="legend-color acidic"></span> Acidic (D/E): <strong id="comp-acidic-pct">0%</strong></span>
+                                                    <span class="legend-item"><span class="legend-color basic"></span> Basic (R/K/H): <strong id="comp-basic-pct">0%</strong></span>
+                                                    <span class="legend-item"><span class="legend-color polar"></span> Polar (S/T/Y/C/N/Q): <strong id="comp-polar-pct">0%</strong></span>
+                                                    <span class="legend-item"><span class="legend-color hydrophobic"></span> Hydrophobic: <strong id="comp-hydrophobic-pct">0%</strong></span>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Phosphorylation Sites prediction -->
+                                            <div class="result-full-card">
+                                                <h5>Predicted Phosphorylation Sites & Kinase Motifs</h5>
+                                                <div class="phospho-list-wrapper">
+                                                    <div class="phospho-summary" id="phospho-summary-text">No sites predicted.</div>
+                                                    <table class="phospho-table" id="phospho-table">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Residue</th>
+                                                                <th>Position</th>
+                                                                <th>Local Motif (+/- 4aa)</th>
+                                                                <th>Kinase Match</th>
+                                                                <th>Consensus Motif</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="phospho-table-body">
+                                                            <!-- dynamically populated -->
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+
+                                            <div class="result-full-card explanation-card">
+                                                <h5>Biological Interpretation</h5>
+                                                <p id="protein-explanation"></p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Protein PDB Mode -->
+                                    <div class="protein-mode-section hidden" id="mode-protein-pdb">
+                                        <div class="input-section">
+                                            <label for="pdb-input">Enter 4-Character PDB ID:</label>
+                                            <div class="pdb-input-row">
+                                                <input type="text" id="pdb-input" placeholder="e.g., 1CBS" maxlength="4">
+                                                <button class="analyze-action-btn protein-theme-btn" id="analyze-pdb-btn">Load Structure</button>
+                                            </div>
+                                            <div class="presets">
+                                                <span>Presets:</span>
+                                                <button class="preset-btn" data-type="pdb" data-seq="1a81">1A81 (HIV Protease)</button>
+                                                <button class="preset-btn" data-type="pdb" data-seq="6m0j">6M0J (COVID Spike RBD)</button>
+                                                <button class="preset-btn" data-type="pdb" data-seq="1cbs">1CBS (CRABP II)</button>
+                                            </div>
+                                        </div>
+                                        <div class="results-section hidden" id="results-protein-pdb">
+                                            <h4 id="pdb-title-header">PDB Entry Structure</h4>
+                                            <div class="pdb-viewer-layout">
+                                                <div class="pdb-info-panel">
+                                                    <h5 id="pdb-info-title">Loading title...</h5>
+                                                    <table class="pdb-info-table">
+                                                        <tr>
+                                                            <td>Organism</td>
+                                                            <td id="pdb-info-organism">-</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Method</td>
+                                                            <td id="pdb-info-method">-</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Resolution</td>
+                                                            <td id="pdb-info-resolution">-</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Release Date</td>
+                                                            <td id="pdb-info-date">-</td>
+                                                        </tr>
+                                                    </table>
+                                                    <div class="pdb-citation">
+                                                        <h6>Primary Citation</h6>
+                                                        <p id="pdb-info-citation">-</p>
+                                                    </div>
+                                                </div>
+                                                <div class="pdb-3d-panel">
+                                                    <div class="pdb-loader" id="pdb-3d-loader">Loading 3D molecular structure...</div>
+                                                    <iframe id="pdb-iframe" src="" allowfullscreen></iframe>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                 </div><!-- end dogma-central -->

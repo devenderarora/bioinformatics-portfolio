@@ -792,3 +792,639 @@ chatSendBtn.addEventListener('click', handleQuery);
 chatInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') handleQuery();
 });
+
+// =====================================================
+// SEQUENCE & STRUCTURE ANALYZER MODULE
+// =====================================================
+(function() {
+    // DOM Elements
+    const modal = document.getElementById('seq-analyzer-modal');
+    const closeBtn = document.getElementById('seq-modal-close-btn');
+    const tabBtns = document.querySelectorAll('.seq-tab-btn');
+    const tabContents = document.querySelectorAll('.seq-tab-content');
+    
+    const nodeDna = document.getElementById('node-dna');
+    const nodeRna = document.getElementById('node-rna');
+    const nodeProtein = document.getElementById('node-protein');
+
+    // DNA Elements
+    const dnaInput = document.getElementById('dna-input');
+    const analyzeDnaBtn = document.getElementById('analyze-dna-btn');
+    const resultsDna = document.getElementById('results-dna');
+    const dnaGcBar = document.getElementById('dna-gc-bar');
+    const dnaGcVal = document.getElementById('dna-gc-val');
+    const dnaLenVal = document.getElementById('dna-len-val');
+    const dnaTranscribeDisplay = document.getElementById('dna-transcribe-display');
+    const dnaTranslateDisplay = document.getElementById('dna-translate-display');
+    const dnaExplanation = document.getElementById('dna-explanation');
+
+    // RNA Elements
+    const rnaInput = document.getElementById('rna-input');
+    const analyzeRnaBtn = document.getElementById('analyze-rna-btn');
+    const resultsRna = document.getElementById('results-rna');
+    const rnaMwVal = document.getElementById('rna-mw-val');
+    const rnaLenVal = document.getElementById('rna-len-val');
+    const rnaStructureDisplay = document.getElementById('rna-structure-display');
+    const rnaExplanation = document.getElementById('rna-explanation');
+
+    // Protein Elements
+    const typeBtnSeq = document.getElementById('type-btn-seq');
+    const typeBtnPdb = document.getElementById('type-btn-pdb');
+    const modeProteinSeq = document.getElementById('mode-protein-seq');
+    const modeProteinPdb = document.getElementById('mode-protein-pdb');
+    
+    const proteinInput = document.getElementById('protein-input');
+    const analyzeProteinBtn = document.getElementById('analyze-protein-btn');
+    const resultsProteinSeq = document.getElementById('results-protein-seq');
+    const proteinPiVal = document.getElementById('protein-pi-val');
+    const proteinGravyVal = document.getElementById('protein-gravy-val');
+    const compAcidicBar = document.getElementById('comp-acidic-bar');
+    const compBasicBar = document.getElementById('comp-basic-bar');
+    const compPolarBar = document.getElementById('comp-polar-bar');
+    const compHydrophobicBar = document.getElementById('comp-hydrophobic-bar');
+    const compAcidicPct = document.getElementById('comp-acidic-pct');
+    const compBasicPct = document.getElementById('comp-basic-pct');
+    const compPolarPct = document.getElementById('comp-polar-pct');
+    const compHydrophobicPct = document.getElementById('comp-hydrophobic-pct');
+    const phosphoSummaryText = document.getElementById('phospho-summary-text');
+    const phosphoTable = document.getElementById('phospho-table');
+    const phosphoTableBody = document.getElementById('phospho-table-body');
+    const proteinExplanation = document.getElementById('protein-explanation');
+
+    // PDB Elements
+    const pdbInput = document.getElementById('pdb-input');
+    const analyzePdbBtn = document.getElementById('analyze-pdb-btn');
+    const resultsProteinPdb = document.getElementById('results-protein-pdb');
+    const pdbTitleHeader = document.getElementById('pdb-title-header');
+    const pdbInfoTitle = document.getElementById('pdb-info-title');
+    const pdbInfoOrganism = document.getElementById('pdb-info-organism');
+    const pdbInfoMethod = document.getElementById('pdb-info-method');
+    const pdbInfoResolution = document.getElementById('pdb-info-resolution');
+    const pdbInfoDate = document.getElementById('pdb-info-date');
+    const pdbInfoCitation = document.getElementById('pdb-info-citation');
+    const pdb3dLoader = document.getElementById('pdb-3d-loader');
+    const pdbIframe = document.getElementById('pdb-iframe');
+
+    // Preset buttons mapping
+    const presetBtns = document.querySelectorAll('.preset-btn');
+
+    // Codon mapping table
+    const CODON_TABLE = {
+        'UUU':'F', 'UUC':'F', 'UUA':'L', 'UUG':'L', 'UCU':'S', 'UCC':'S', 'UCA':'S', 'UCG':'S',
+        'UAU':'Y', 'UAC':'Y', 'UAA':'*', 'UAG':'*', 'UGU':'C', 'UGC':'C', 'UGA':'*', 'UGG':'W',
+        'CUU':'L', 'CUC':'L', 'CUA':'L', 'CUG':'L', 'CCU':'P', 'CCC':'P', 'CCA':'P', 'CCG':'P',
+        'CAU':'H', 'CAC':'H', 'CAA':'Q', 'CAG':'Q', 'CGU':'R', 'CGC':'R', 'CGA':'R', 'CGG':'R',
+        'AUU':'I', 'AUC':'I', 'AUA':'I', 'AUG':'M', 'ACU':'T', 'ACC':'T', 'ACA':'T', 'ACG':'T',
+        'AAU':'N', 'AAC':'N', 'AAA':'K', 'AAG':'K', 'AGU':'S', 'AGC':'S', 'AGA':'R', 'AGG':'R',
+        'GUU':'V', 'GUC':'V', 'GUA':'V', 'GUG':'V', 'GCU':'A', 'GCC':'A', 'GCA':'A', 'GCG':'A',
+        'GAU':'D', 'GAC':'D', 'GAA':'E', 'GAG':'E', 'GGU':'G', 'GGC':'G', 'GGA':'G', 'GGG':'G'
+    };
+
+    // Hydropathy values for GRAVY
+    const HYDROPATHY_VALUES = {
+        'A': 1.8, 'R': -4.5, 'N': -3.5, 'D': -3.5, 'C': 2.5, 'Q': -3.5, 'E': -3.5, 'G': -0.4, 'H': -3.2,
+        'I': 4.5, 'L': 3.8, 'K': -3.9, 'M': 1.9, 'F': 2.8, 'P': -1.6, 'S': -0.8, 'T': -0.7, 'W': -0.9,
+        'Y': -1.3, 'V': 4.2
+    };
+
+    // 1. Modal open/close actions
+    function openModal(tabName) {
+        if (!modal) return;
+        modal.classList.remove('hidden');
+        // Force reflow
+        modal.offsetHeight;
+        modal.classList.add('visible');
+        switchTab(tabName);
+    }
+
+    function closeModal() {
+        if (!modal) return;
+        modal.classList.remove('visible');
+        // Clear iframe to stop active Molstar rendering
+        if (pdbIframe) pdbIframe.src = '';
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 300);
+    }
+
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    
+    // Close modal on escape key
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal && modal.classList.contains('visible')) {
+            closeModal();
+        }
+    });
+
+    // Close on click outside content
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+    }
+
+    // 2. Node click integrations
+    if (nodeDna) {
+        nodeDna.addEventListener('click', () => openModal('dna'));
+    }
+    if (nodeRna) {
+        nodeRna.addEventListener('click', () => openModal('rna'));
+    }
+    if (nodeProtein) {
+        nodeProtein.addEventListener('click', () => openModal('protein'));
+    }
+
+    // 3. Tab switching
+    function switchTab(tabName) {
+        tabBtns.forEach(btn => {
+            if (btn.getAttribute('data-tab') === tabName) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+
+        tabContents.forEach(content => {
+            if (content.id === `tab-${tabName}`) {
+                content.classList.add('active');
+            } else {
+                content.classList.remove('active');
+            }
+        });
+        
+        // Clean iframe if switching away from protein PDB
+        if (tabName !== 'protein' && pdbIframe) {
+            pdbIframe.src = '';
+        }
+    }
+
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            switchTab(btn.getAttribute('data-tab'));
+        });
+    });
+
+    // Preset buttons loading
+    presetBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const type = btn.getAttribute('data-type');
+            const seq = btn.getAttribute('data-seq');
+            
+            if (type === 'dna') {
+                dnaInput.value = seq;
+                runDnaAnalysis();
+            } else if (type === 'rna') {
+                rnaInput.value = seq;
+                runRnaAnalysis();
+            } else if (type === 'protein') {
+                proteinInput.value = seq;
+                runProteinAnalysis();
+            } else if (type === 'pdb') {
+                pdbInput.value = seq.toUpperCase();
+                runPdbAnalysis();
+            }
+        });
+    });
+
+    // 4. DNA Analysis Logic
+    function runDnaAnalysis() {
+        const rawSeq = dnaInput.value.trim().toUpperCase().replace(/[^ATCG]/g, '');
+        if (!rawSeq) return;
+
+        // Sequence length
+        const len = rawSeq.length;
+        dnaLenVal.textContent = `${len} bp`;
+
+        // GC Content
+        const gcCount = (rawSeq.match(/[GC]/g) || []).length;
+        const gcPct = len > 0 ? Math.round((gcCount / len) * 100) : 0;
+        dnaGcVal.textContent = `${gcPct}%`;
+        dnaGcBar.style.width = `${gcPct}%`;
+
+        // Transcription (T -> U)
+        const transcribed = rawSeq.replace(/T/g, 'U');
+        dnaTranscribeDisplay.textContent = transcribed || "No sequence";
+
+        // Translation
+        let translated = '';
+        for (let i = 0; i < transcribed.length - 2; i += 3) {
+            const codon = transcribed.substring(i, i + 3);
+            const aa = CODON_TABLE[codon] || '?';
+            
+            // Apply property-based color coding to translated amino acids
+            let className = '';
+            if ('AFGILMPVW'.includes(aa)) className = 'aa-hydrophobic';
+            else if ('DE'.includes(aa)) className = 'aa-acidic';
+            else if ('RKH'.includes(aa)) className = 'aa-basic';
+            else if ('STYCNQ'.includes(aa)) className = 'aa-polar';
+            else className = 'aa-special';
+
+            translated += `<span class="${className}">${aa}</span>`;
+        }
+        dnaTranslateDisplay.innerHTML = translated || "Translation error";
+
+        // Human Explanation
+        let interpretation = `This DNA fragment contains <strong>${len} base pairs</strong>. `;
+        if (gcPct > 55) {
+            interpretation += `It is structurally <strong>GC-rich (${gcPct}%)</strong>, which indicates strong Watson-Crick base-pairing (3 hydrogen bonds per pair). GC-rich sequences exhibit higher thermal stability, requiring higher temperatures to denature, and are commonly found in regulatory promoter regions or coding sequences of organisms adapted to higher temperatures.`;
+        } else if (gcPct < 45) {
+            interpretation += `It is structurally <strong>AT-rich (${gcPct}% GC)</strong>. AT base pairs share only 2 hydrogen bonds, making them easier to split. AT-rich areas are typical of transcription initiation sites (like the TATA box in eukaryotes) and replication origins where the cell needs to unwind the double helix easily.`;
+        } else {
+            interpretation += `It has a balanced <strong>medium GC content (${gcPct}%)</strong>, typical of standard genomic coding regions.`;
+        }
+
+        if (rawSeq.startsWith('ATG')) {
+            interpretation += `<br><br>⚡ <strong>Start Codon Detected!</strong> The sequence begins with the canonical initiation sequence (ATG). This indicates it represents a coding gene region ready for RNA Polymerase transcription and translation.`;
+        }
+
+        dnaExplanation.innerHTML = interpretation;
+        resultsDna.classList.remove('hidden');
+    }
+
+    if (analyzeDnaBtn) analyzeDnaBtn.addEventListener('click', runDnaAnalysis);
+
+    // 5. RNA Analysis Logic
+    function runRnaAnalysis() {
+        const rawSeq = rnaInput.value.trim().toUpperCase().replace(/[^AUCG]/g, '');
+        if (!rawSeq) return;
+
+        // Sequence length
+        const len = rawSeq.length;
+        rnaLenVal.textContent = `${len} nt`;
+
+        // Molecular Weight estimation (approx 339.2 g/mol per nucleotide)
+        const mw = len > 0 ? (len * 339.2 / 1000).toFixed(2) : '0';
+        rnaMwVal.textContent = `${mw} kDa`;
+
+        // Simple stem-loop secondary structure prediction
+        // Scans for complementary sequences (A=U, G≡C) that fold back on themselves
+        let bestStem = null;
+        let bestLen = 0;
+        
+        // Scan for stem lengths from 4 to 8, loop lengths 3 to 10
+        for (let stemLen = 4; stemLen <= 8; stemLen++) {
+            for (let loopLen = 3; loopLen <= 10; loopLen++) {
+                for (let i = 0; i < len - (2 * stemLen + loopLen); i++) {
+                    const stem1 = rawSeq.substring(i, i + stemLen);
+                    const stem2 = rawSeq.substring(i + stemLen + loopLen, i + 2 * stemLen + loopLen);
+                    
+                    // check if stem2 is reverse complementary to stem1
+                    let isComplementary = true;
+                    for (let k = 0; k < stemLen; k++) {
+                        const b1 = stem1[k];
+                        const b2 = stem2[stemLen - 1 - k];
+                        if (!((b1==='A' && b2==='U') || (b1==='U' && b2==='A') || (b1==='G' && b2==='C') || (b1==='C' && b2==='G'))) {
+                            isComplementary = false;
+                            break;
+                        }
+                    }
+                    
+                    if (isComplementary && stemLen > bestLen) {
+                        bestLen = stemLen;
+                        bestStem = {
+                            start: i,
+                            stem1: stem1,
+                            loop: rawSeq.substring(i + stemLen, i + stemLen + loopLen),
+                            stem2: stem2
+                        };
+                    }
+                }
+            }
+        }
+
+        if (bestStem) {
+            // Create a text-based ASCII structure diagram
+            let visual = `   [Loop: ${bestStem.loop}]\n`;
+            for (let k = 0; k < bestStem.stem1.length; k++) {
+                const b1 = bestStem.stem1[k];
+                const b2 = bestStem.stem2[bestStem.stem2.length - 1 - k];
+                const bond = (b1 === 'G' || b1 === 'C') ? '≡' : '=';
+                visual += `      ${b1} ${bond} ${b2}\n`;
+            }
+            visual += `  5'-${rawSeq.substring(0, bestStem.start)}...  ...${rawSeq.substring(bestStem.start + 2 * bestLen + bestStem.loop.length)}-3'`;
+            rnaStructureDisplay.textContent = visual;
+            
+            rnaExplanation.innerHTML = `This RNA single strand folds dynamically. We detected a potential **stem-loop hairpin motif** with a stem of <strong>${bestLen} base pairs</strong> and a loop of <strong>${bestStem.loop.length} bases</strong>. These hairpins form molecular switches that regulate ribosomal translation, stabilize transcripts against exonucleases, or trigger transcription termination.`;
+        } else {
+            rnaStructureDisplay.textContent = "No stable stem-loop hairpins detected in this sequence.";
+            rnaExplanation.innerHTML = `This RNA sequence (length: ${len} nt) does not form stable self-complementary loops based on primary Watson-Crick analysis. It likely exists in a highly unstructured or linear format, typical of rapid-translation mRNAs.`;
+        }
+
+        resultsRna.classList.remove('hidden');
+    }
+
+    if (analyzeRnaBtn) analyzeRnaBtn.addEventListener('click', runRnaAnalysis);
+
+    // 6. Protein & PDB Tab Logic (Sequence vs PDB ID)
+    if (typeBtnSeq) {
+        typeBtnSeq.addEventListener('click', () => {
+            typeBtnSeq.classList.add('active');
+            typeBtnPdb.classList.remove('active');
+            modeProteinSeq.classList.remove('hidden');
+            modeProteinPdb.classList.add('hidden');
+            if (pdbIframe) pdbIframe.src = '';
+        });
+    }
+
+    if (typeBtnPdb) {
+        typeBtnPdb.addEventListener('click', () => {
+            typeBtnPdb.classList.add('active');
+            typeBtnSeq.classList.remove('active');
+            modeProteinPdb.classList.remove('hidden');
+            modeProteinSeq.classList.add('hidden');
+        });
+    }
+
+    // Estimate Isoelectric Point (pI)
+    function estimateIsoelectricPoint(seq) {
+        const pK = {
+            'D': 3.9, 'E': 4.1, 'C': 8.5, 'Y': 10.1, 'H': 6.5, 'K': 10.8, 'R': 12.5,
+            'N_term': 8.6, 'C_term': 3.6
+        };
+        
+        const counts = { 'D': 0, 'E': 0, 'C': 0, 'Y': 0, 'H': 0, 'K': 0, 'R': 0 };
+        for (let char of seq) {
+            if (char in counts) counts[char]++;
+        }
+        
+        let minPh = 0.0;
+        let maxPh = 14.0;
+        let pH = 7.0;
+        
+        // Iterative bisection solver to find pH where net charge is 0
+        for (let iter = 0; iter < 40; iter++) {
+            pH = (minPh + maxPh) / 2;
+            let charge = 0.0;
+            
+            charge += 1.0 / (1.0 + Math.pow(10, pH - pK.N_term));
+            charge -= 1.0 / (1.0 + Math.pow(10, pK.C_term - pH));
+            
+            charge -= counts['D'] / (1.0 + Math.pow(10, pK.D - pH));
+            charge -= counts['E'] / (1.0 + Math.pow(10, pK.E - pH));
+            charge -= counts['C'] / (1.0 + Math.pow(10, pK.C - pH));
+            charge -= counts['Y'] / (1.0 + Math.pow(10, pK.Y - pH));
+            
+            charge += counts['H'] / (1.0 + Math.pow(10, pH - pK.H));
+            charge += counts['K'] / (1.0 + Math.pow(10, pH - pK.K));
+            charge += counts['R'] / (1.0 + Math.pow(10, pH - pK.R));
+            
+            if (charge > 0) {
+                minPh = pH;
+            } else {
+                maxPh = pH;
+            }
+        }
+        return pH.toFixed(2);
+    }
+
+    // Predict Phosphorylation Sites
+    function predictPhosphorylationSites(seq) {
+        const sites = [];
+        
+        for (let i = 0; i < seq.length; i++) {
+            const residue = seq[i];
+            if (residue === 'S' || residue === 'T' || residue === 'Y') {
+                // Get local context (+/- 4 amino acids)
+                const start = Math.max(0, i - 4);
+                const end = Math.min(seq.length - 1, i + 4);
+                
+                let context = '';
+                // Pad left if near N-terminus
+                if (i < 4) context += '-'.repeat(4 - i);
+                context += seq.substring(start, end + 1);
+                // Pad right if near C-terminus
+                if (seq.length - 1 - i < 4) context += '-'.repeat(4 - (seq.length - 1 - i));
+                
+                // Formatted context with highlighted residue
+                const highlightedContext = context.substring(0, 4) + `<span class="phospho-site-${residue.toLowerCase()}">${residue}</span>` + context.substring(5);
+                
+                // Kinase consensus motif checking
+                let kinase = 'Basal Kinase';
+                let consensus = 'S/T/Y standard residue';
+                let confidence = 'Low';
+                
+                // PKA: [R/K][R/K] - X - [S/T]
+                if (residue !== 'Y') {
+                    const posMinus3 = context[1];
+                    const posMinus2 = context[2];
+                    if (['R','K'].includes(posMinus3) && ['R','K'].includes(posMinus2)) {
+                        kinase = 'PKA (Protein Kinase A)';
+                        consensus = '[R/K][R/K]-X-[S/T]';
+                        confidence = 'High';
+                    }
+                    // PKC: [R/K] - X - [S/T] - X - [R/K] or [S/T] - X - [R/K]
+                    else if (['R','K'].includes(context[2]) || ['R','K'].includes(context[5])) {
+                        kinase = 'PKC (Protein Kinase C)';
+                        consensus = '[R/K]-X-[S/T] or [S/T]-X-[R/K]';
+                        confidence = 'Medium';
+                    }
+                    // CK2: [S/T] - X - X - [D/E]
+                    else if (['D','E'].includes(context[7])) {
+                        kinase = 'CK2 (Casein Kinase II)';
+                        consensus = '[S/T]-X-X-[D/E]';
+                        confidence = 'High';
+                    }
+                    // CDK: [S/T] - P (proline-directed)
+                    else if (context[5] === 'P') {
+                        kinase = 'CDK (Cyclin-Dep Kinase)';
+                        consensus = '[S/T]-P';
+                        confidence = 'High';
+                    }
+                } else {
+                    // Tyrosine kinase motifs (Src family, etc.): [E/D]-X-X-Y or Y-X-X-[F/I/L/V]
+                    if (['D','E'].includes(context[1])) {
+                        kinase = 'Src Tyrosine Kinase';
+                        consensus = '[D/E]-X-X-Y';
+                        confidence = 'Medium';
+                    } else if (['F','I','L','V'].includes(context[7])) {
+                        kinase = 'RTK (Receptor Tyr Kinase)';
+                        consensus = 'Y-X-X-[F/I/L/V]';
+                        confidence = 'Medium';
+                    }
+                }
+                
+                sites.push({
+                    residue: residue === 'S' ? 'Serine (S)' : residue === 'T' ? 'Threonine (T)' : 'Tyrosine (Y)',
+                    position: i + 1,
+                    context: highlightedContext,
+                    kinase: kinase,
+                    consensus: consensus,
+                    confidence: confidence
+                });
+            }
+        }
+        
+        return sites;
+    }
+
+    function runProteinAnalysis() {
+        const rawSeq = proteinInput.value.trim().toUpperCase().replace(/[^ACDEFGHIKLMNPQRSTVWY]/g, '');
+        if (!rawSeq) return;
+
+        // 1. Isoelectric Point
+        const pI = estimateIsoelectricPoint(rawSeq);
+        proteinPiVal.textContent = pI;
+
+        // 2. GRAVY score
+        let gravySum = 0;
+        for (let aa of rawSeq) {
+            gravySum += HYDROPATHY_VALUES[aa] || 0;
+        }
+        const gravy = rawSeq.length > 0 ? (gravySum / rawSeq.length).toFixed(3) : '0.00';
+        proteinGravyVal.textContent = gravy;
+
+        // 3. Amino acid composition breakdown
+        const len = rawSeq.length;
+        let acidic = 0; // D, E
+        let basic = 0;  // R, K, H
+        let polar = 0;  // S, T, Y, C, N, Q
+        let hydrophobic = 0; // A, V, F, L, I, M, P, W, G (G is neutral but fits best here)
+        
+        for (let aa of rawSeq) {
+            if ('DE'.includes(aa)) acidic++;
+            else if ('RKH'.includes(aa)) basic++;
+            else if ('STYCNQ'.includes(aa)) polar++;
+            else hydrophobic++;
+        }
+
+        const acidicPct = len > 0 ? Math.round((acidic / len) * 100) : 0;
+        const basicPct = len > 0 ? Math.round((basic / len) * 100) : 0;
+        const polarPct = len > 0 ? Math.round((polar / len) * 100) : 0;
+        const hydrophobicPct = len > 0 ? 100 - (acidicPct + basicPct + polarPct) : 0; // sum to 100
+
+        compAcidicBar.style.width = `${acidicPct}%`;
+        compBasicBar.style.width = `${basicPct}%`;
+        compPolarBar.style.width = `${polarPct}%`;
+        compHydrophobicBar.style.width = `${hydrophobicPct}%`;
+
+        compAcidicPct.textContent = `${acidicPct}%`;
+        compBasicPct.textContent = `${basicPct}%`;
+        compPolarPct.textContent = `${polarPct}%`;
+        compHydrophobicPct.textContent = `${hydrophobicPct}%`;
+
+        // 4. Phosphorylation prediction
+        const phosphoSites = predictPhosphorylationSites(rawSeq);
+        if (phosphoSites.length > 0) {
+            phosphoSummaryText.innerHTML = `Detected <strong>${phosphoSites.length}</strong> candidate phosphorylation residues (S/T/Y).`;
+            phosphoTable.style.display = 'table';
+            phosphoTableBody.innerHTML = phosphoSites.map(site => `
+                <tr>
+                    <td>${site.residue}</td>
+                    <td><strong>${site.position}</strong></td>
+                    <td class="seq-display" style="padding:4px 8px; border:none;">${site.context}</td>
+                    <td>${site.kinase}</td>
+                    <td><code style="color:#06b6d4; font-size:10px;">${site.consensus}</code></td>
+                </tr>
+            `).join('');
+        } else {
+            phosphoSummaryText.textContent = "No Serine, Threonine, or Tyrosine residues found. No phosphorylation sites predicted.";
+            phosphoTable.style.display = 'none';
+            phosphoTableBody.innerHTML = '';
+        }
+
+        // 5. Human Explanation
+        let interpretation = `This protein contains <strong>${len} amino acids</strong>. `;
+        if (parseFloat(gravy) > 0) {
+            interpretation += `The protein is highly <strong>hydrophobic (GRAVY: ${gravy})</strong>, suggesting it is likely a trans-membrane protein or fits inside hydrophobic membrane lipid bilayers. `;
+        } else {
+            interpretation += `The protein is <strong>hydrophilic (GRAVY: ${gravy})</strong>, indicating it is likely a soluble protein operating in the cytoplasm, nucleus, or extracellular fluid. `;
+        }
+
+        interpretation += `At its estimated isoelectric point of <strong>pI ${pI}</strong>, the protein carries a net charge of zero. `;
+        if (parseFloat(pI) < 6.0) {
+            interpretation += `Because it is highly acidic (pI < 6), this protein will be negatively charged at standard physiological pH (~7.4), allowing it to interact with positively charged basic molecules.`;
+        } else if (parseFloat(pI) > 8.0) {
+            interpretation += `Being a basic protein (pI > 8), it remains positively charged at physiological pH, a classic feature of nucleic acid binding proteins (like Histones) which bind negative DNA backbones.`;
+        } else {
+            interpretation += `It is biologically neutral, carrying minimal net charge under physiological conditions.`;
+        }
+
+        proteinExplanation.innerHTML = interpretation;
+        resultsProteinSeq.classList.remove('hidden');
+    }
+
+    if (analyzeProteinBtn) analyzeProteinBtn.addEventListener('click', runProteinAnalysis);
+
+    // 7. PDB Structure analysis
+    async function runPdbAnalysis() {
+        const pdbId = pdbInput.value.trim().toUpperCase();
+        if (pdbId.length !== 4) return;
+
+        resultsProteinPdb.classList.remove('hidden');
+        pdbTitleHeader.textContent = `PDB Entry Structure: ${pdbId}`;
+        pdb3dLoader.classList.remove('hidden');
+        
+        // Load interactive NCBI iCn3D viewer in iframe (fully embeddable, avoids X-Frame connection refused errors)
+        pdbIframe.src = `https://www.ncbi.nlm.nih.gov/Structure/icn3d/full.html?pdbid=${pdbId}&showcommand=0&showmenu=0&showtitle=0`;
+        pdbIframe.onload = () => {
+            pdb3dLoader.classList.add('hidden');
+        };
+
+        // Fetch PDB metadata from RCSB API
+        pdbInfoTitle.textContent = "Loading entry details...";
+        pdbInfoOrganism.textContent = "-";
+        pdbInfoMethod.textContent = "-";
+        pdbInfoResolution.textContent = "-";
+        pdbInfoDate.textContent = "-";
+        pdbInfoCitation.textContent = "-";
+
+        try {
+            const response = await fetch(`https://data.rcsb.org/rest/v1/core/entry/${pdbId}`);
+            if (!response.ok) throw new Error("Entry not found");
+            const data = await response.json();
+            
+            // Populate PDB Meta details
+            if (data.struct && data.struct.title) {
+                pdbInfoTitle.textContent = data.struct.title;
+            } else {
+                pdbInfoTitle.textContent = "Macromolecular Structure Model";
+            }
+
+            if (data.rcsb_entity_source_organism && data.rcsb_entity_source_organism.length > 0) {
+                const organisms = data.rcsb_entity_source_organism.map(o => o.scientific_name).filter((v, i, a) => a.indexOf(v) === i);
+                pdbInfoOrganism.textContent = organisms.join(', ');
+            } else {
+                pdbInfoOrganism.textContent = "Unknown Organism";
+            }
+
+            if (data.exptl && data.exptl.length > 0) {
+                pdbInfoMethod.textContent = data.exptl.map(e => e.method).join(', ');
+            } else {
+                pdbInfoMethod.textContent = "X-ray Diffraction";
+            }
+
+            if (data.rcsb_entry_info && data.rcsb_entry_info.resolution_combined) {
+                pdbInfoResolution.textContent = `${data.rcsb_entry_info.resolution_combined.join(' / ')} Å`;
+            } else {
+                pdbInfoResolution.textContent = "N/A";
+            }
+
+            if (data.rcsb_accession_info && data.rcsb_accession_info.deposit_date) {
+                const date = new Date(data.rcsb_accession_info.deposit_date);
+                pdbInfoDate.textContent = date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+            } else {
+                pdbInfoDate.textContent = "N/A";
+            }
+
+            if (data.rcsb_primary_citation) {
+                let citation = `"${data.rcsb_primary_citation.title || 'PDB Primary Citation'}"`;
+                if (data.rcsb_primary_citation.journal) citation += ` - <em>${data.rcsb_primary_citation.journal}</em>`;
+                if (data.rcsb_primary_citation.year) citation += `, ${data.rcsb_primary_citation.year}`;
+                pdbInfoCitation.innerHTML = citation;
+            } else {
+                pdbInfoCitation.textContent = "No primary citation registered.";
+            }
+
+        } catch (e) {
+            console.error("RCSB API metadata fetch failed:", e);
+            pdbInfoTitle.textContent = "Entry structure loaded (Metadata unavailable)";
+            pdbInfoOrganism.textContent = "Unknown";
+            pdbInfoMethod.textContent = "Not specified";
+            pdbInfoResolution.textContent = "Unknown";
+            pdbInfoDate.textContent = "N/A";
+            pdbInfoCitation.textContent = "Structure loaded successfully. Could not establish connection to the RCSB registry database.";
+        }
+    }
+
+    if (analyzePdbBtn) analyzePdbBtn.addEventListener('click', runPdbAnalysis);
+})();
