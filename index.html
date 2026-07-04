@@ -331,6 +331,106 @@
                                     <div class="protein-type-selector">
                                         <button class="type-btn active" id="type-btn-seq">Amino Acid Sequence</button>
                                         <button class="type-btn" id="type-btn-pdb">PDB 3D Structure</button>
+                                        <button class="type-btn" id="type-btn-upload">Upload PDB File</button>
+                                    </div>
+
+                                    <!-- Protein Local Upload Mode -->
+                                    <div class="protein-mode-section hidden" id="mode-protein-upload">
+                                        <div class="input-section">
+                                            <label for="pdb-file-input">Select a Local PDB File (.pdb):</label>
+                                            <div class="pdb-input-row" style="width: 100%; display: flex; align-items: center; gap: 15px;">
+                                                <input type="file" id="pdb-file-input" accept=".pdb" style="display: none;">
+                                                <button class="analyze-action-btn protein-theme-btn" onclick="document.getElementById('pdb-file-input').click()" style="align-self: auto;">Choose File</button>
+                                                <span id="pdb-file-name" style="font-family: var(--font-mono); font-size: 12px; color: var(--text-muted);">No file chosen</span>
+                                            </div>
+                                            <button class="analyze-action-btn protein-theme-btn" id="analyze-pdb-file-btn" style="margin-top: 10px;">Parse & Analyze PDB</button>
+                                        </div>
+                                        <div class="results-section hidden" id="results-protein-upload">
+                                            <h4 id="pdb-file-title-header">PDB Local File Analysis</h4>
+                                            
+                                            <!-- PDB Metadata parsed client side -->
+                                            <div class="result-full-card">
+                                                <h5>Parsed File Info</h5>
+                                                <table class="pdb-info-table">
+                                                    <tr>
+                                                        <td>Protein Title</td>
+                                                        <td id="pdb-file-info-title">-</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Organism</td>
+                                                        <td id="pdb-file-info-organism">-</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Exp. Method</td>
+                                                        <td id="pdb-file-info-method">-</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Extracted Seq Length</td>
+                                                        <td id="pdb-file-info-length">-</td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                            
+                                            <!-- Computed Sequence from ATOMs -->
+                                            <div class="result-full-card">
+                                                <h5>Reconstructed Primary Sequence</h5>
+                                                <div class="seq-display protein-seq-display" id="pdb-file-seq-display" style="max-height: 80px;"></div>
+                                            </div>
+                                            
+                                            <!-- Analysis results -->
+                                            <div class="results-grid">
+                                                <div class="result-card">
+                                                    <h5>Estimated Isoelectric Point (pI)</h5>
+                                                    <span class="result-val" id="pdb-file-pi-val">7.00</span>
+                                                </div>
+                                                <div class="result-card">
+                                                    <h5>GRAVY Score (Hydropathy)</h5>
+                                                    <span class="result-val" id="pdb-file-gravy-val">0.00</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="result-full-card">
+                                                <h5>Charge & Composition Profile</h5>
+                                                <div class="composition-bar-container">
+                                                    <div class="comp-bar comp-acidic" id="pdb-file-comp-acidic-bar" style="width: 25%"></div>
+                                                    <div class="comp-bar comp-basic" id="pdb-file-comp-basic-bar" style="width: 25%"></div>
+                                                    <div class="comp-bar comp-polar" id="pdb-file-comp-polar-bar" style="width: 25%"></div>
+                                                    <div class="comp-bar comp-hydrophobic" id="pdb-file-comp-hydrophobic-bar" style="width: 25%"></div>
+                                                </div>
+                                                <div class="comp-legend">
+                                                    <span class="legend-item"><span class="legend-color acidic"></span> Acidic (D/E): <strong id="pdb-file-comp-acidic-pct">0%</strong></span>
+                                                    <span class="legend-item"><span class="legend-color basic"></span> Basic (R/K/H): <strong id="pdb-file-comp-basic-pct">0%</strong></span>
+                                                    <span class="legend-item"><span class="legend-color polar"></span> Polar (S/T/Y/C/N/Q): <strong id="pdb-file-comp-polar-pct">0%</strong></span>
+                                                    <span class="legend-item"><span class="legend-color hydrophobic"></span> Hydrophobic: <strong id="pdb-file-comp-hydrophobic-pct">0%</strong></span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="result-full-card">
+                                                <h5>Predicted Phosphorylation Sites & Kinase Motifs</h5>
+                                                <div class="phospho-list-wrapper">
+                                                    <div class="phospho-summary" id="pdb-file-phospho-summary-text">No sites predicted.</div>
+                                                    <table class="phospho-table" id="pdb-file-phospho-table">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Residue</th>
+                                                                <th>Position</th>
+                                                                <th>Local Motif (+/- 4aa)</th>
+                                                                <th>Kinase Match</th>
+                                                                <th>Consensus Motif</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="pdb-file-phospho-table-body">
+                                                            <!-- dynamically populated -->
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="result-full-card explanation-card">
+                                                <h5>Biological Interpretation</h5>
+                                                <p id="pdb-file-explanation"></p>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <!-- Protein Sequence Mode -->

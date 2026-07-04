@@ -865,6 +865,38 @@ chatInput.addEventListener('keypress', (e) => {
     const pdb3dLoader = document.getElementById('pdb-3d-loader');
     const pdbIframe = document.getElementById('pdb-iframe');
 
+    // Local PDB File Upload Elements
+    const typeBtnUpload = document.getElementById('type-btn-upload');
+    const modeProteinUpload = document.getElementById('mode-protein-upload');
+    const resultsProteinUpload = document.getElementById('results-protein-upload');
+    const pdbFileInput = document.getElementById('pdb-file-input');
+    const pdbFileName = document.getElementById('pdb-file-name');
+    const analyzePdbFileBtn = document.getElementById('analyze-pdb-file-btn');
+    const pdbFileTitleHeader = document.getElementById('pdb-file-title-header');
+    
+    const pdbFileInfoTitle = document.getElementById('pdb-file-info-title');
+    const pdbFileInfoOrganism = document.getElementById('pdb-file-info-organism');
+    const pdbFileInfoMethod = document.getElementById('pdb-file-info-method');
+    const pdbFileInfoLength = document.getElementById('pdb-file-info-length');
+    const pdbFileSeqDisplay = document.getElementById('pdb-file-seq-display');
+    
+    const pdbFilePiVal = document.getElementById('pdb-file-pi-val');
+    const pdbFileGravyVal = document.getElementById('pdb-file-gravy-val');
+    const pdbFileCompAcidicBar = document.getElementById('pdb-file-comp-acidic-bar');
+    const pdbFileCompBasicBar = document.getElementById('pdb-file-comp-basic-bar');
+    const pdbFileCompPolarBar = document.getElementById('pdb-file-comp-polar-bar');
+    const pdbFileCompHydrophobicBar = document.getElementById('pdb-file-comp-hydrophobic-bar');
+    
+    const pdbFileCompAcidicPct = document.getElementById('pdb-file-comp-acidic-pct');
+    const pdbFileCompBasicPct = document.getElementById('pdb-file-comp-basic-pct');
+    const pdbFileCompPolarPct = document.getElementById('pdb-file-comp-polar-pct');
+    const pdbFileCompHydrophobicPct = document.getElementById('pdb-file-comp-hydrophobic-pct');
+    
+    const pdbFilePhosphoSummaryText = document.getElementById('pdb-file-phospho-summary-text');
+    const pdbFilePhosphoTable = document.getElementById('pdb-file-phospho-table');
+    const pdbFilePhosphoTableBody = document.getElementById('pdb-file-phospho-table-body');
+    const pdbFileExplanation = document.getElementById('pdb-file-explanation');
+
     // Preset buttons mapping
     const presetBtns = document.querySelectorAll('.preset-btn');
 
@@ -887,6 +919,13 @@ chatInput.addEventListener('keypress', (e) => {
         'Y': -1.3, 'V': 4.2
     };
 
+    // AA 3-to-1 letter mapping for local PDB parsing
+    const AA_3TO1 = {
+        'ALA':'A', 'ARG':'R', 'ASN':'N', 'ASP':'D', 'CYS':'C', 'GLN':'Q', 'GLU':'E', 'GLY':'G', 'HIS':'H',
+        'ILE':'I', 'LEU':'L', 'LYS':'K', 'MET':'M', 'PHE':'F', 'PRO':'P', 'SER':'S', 'THR':'T', 'TRP':'W',
+        'TYR':'Y', 'VAL':'V', 'ASX':'B', 'GLX':'Z', 'SEC':'U', 'PYL':'O', 'XAA':'X'
+    };
+
     // 1. Modal open/close actions
     function openModal(tabName) {
         if (!modal) return;
@@ -894,6 +933,26 @@ chatInput.addEventListener('keypress', (e) => {
         // Force reflow
         modal.offsetHeight;
         modal.classList.add('visible');
+        
+        // Hide the tabs container completely as requested to isolate portals
+        const tabHeaderContainer = document.querySelector('.seq-modal-tabs');
+        if (tabHeaderContainer) tabHeaderContainer.style.display = 'none';
+
+        // Update modal title & subtitle dynamically
+        const modalTitle = document.querySelector('.seq-modal-header h3');
+        const modalSubtitle = document.querySelector('.seq-modal-subtitle');
+        
+        if (tabName === 'dna') {
+            if (modalTitle) modalTitle.textContent = '🧬 DNA Sequence Analyzer';
+            if (modalSubtitle) modalSubtitle.textContent = 'Deoxyribonucleic acid coding region properties & translation';
+        } else if (tabName === 'rna') {
+            if (modalTitle) modalTitle.textContent = '🧬 RNA Sequence Analyzer';
+            if (modalSubtitle) modalSubtitle.textContent = 'Ribonucleic acid structure, stem-loop hairpins, & translation';
+        } else if (tabName === 'protein') {
+            if (modalTitle) modalTitle.textContent = '⚙️ Proteomics & PDB Analyzer';
+            if (modalSubtitle) modalSubtitle.textContent = '3D structure details, phosphorylation prediction, & isoelectric point (pI)';
+        }
+
         switchTab(tabName);
     }
 
@@ -1120,8 +1179,10 @@ chatInput.addEventListener('keypress', (e) => {
         typeBtnSeq.addEventListener('click', () => {
             typeBtnSeq.classList.add('active');
             typeBtnPdb.classList.remove('active');
+            typeBtnUpload.classList.remove('active');
             modeProteinSeq.classList.remove('hidden');
             modeProteinPdb.classList.add('hidden');
+            modeProteinUpload.classList.add('hidden');
             if (pdbIframe) pdbIframe.src = '';
         });
     }
@@ -1130,10 +1191,197 @@ chatInput.addEventListener('keypress', (e) => {
         typeBtnPdb.addEventListener('click', () => {
             typeBtnPdb.classList.add('active');
             typeBtnSeq.classList.remove('active');
+            typeBtnUpload.classList.remove('active');
             modeProteinPdb.classList.remove('hidden');
             modeProteinSeq.classList.add('hidden');
+            modeProteinUpload.classList.add('hidden');
         });
     }
+
+    if (typeBtnUpload) {
+        typeBtnUpload.addEventListener('click', () => {
+            typeBtnUpload.classList.add('active');
+            typeBtnSeq.classList.remove('active');
+            typeBtnPdb.classList.remove('active');
+            modeProteinUpload.classList.remove('hidden');
+            modeProteinSeq.classList.add('hidden');
+            modeProteinPdb.classList.add('hidden');
+            if (pdbIframe) pdbIframe.src = '';
+        });
+    }
+
+    // Update PDB filename label
+    if (pdbFileInput) {
+        pdbFileInput.addEventListener('change', () => {
+            if (pdbFileInput.files.length > 0) {
+                pdbFileName.textContent = pdbFileInput.files[0].name;
+            } else {
+                pdbFileName.textContent = "No file chosen";
+            }
+        });
+    }
+
+    // Local PDB File parsing & analysis
+    async function runLocalPdbAnalysis() {
+        if (!pdbFileInput || pdbFileInput.files.length === 0) {
+            alert("Please select a .pdb file to analyze.");
+            return;
+        }
+
+        const file = pdbFileInput.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            const content = e.target.result;
+            const lines = content.split('\n');
+
+            let title = '';
+            let organism = '';
+            let method = '';
+            const chains = {};
+
+            // Parse line by line
+            for (let line of lines) {
+                if (line.startsWith('TITLE')) {
+                    title += line.substring(10, 80).trim() + ' ';
+                } else if (line.startsWith('SOURCE') && line.includes('ORGANISM_SCIENTIFIC:')) {
+                    const parts = line.split('ORGANISM_SCIENTIFIC:');
+                    if (parts[1]) organism += parts[1].replace(/;/g, '').trim() + ' ';
+                } else if (line.startsWith('EXPDTA')) {
+                    method += line.substring(10, 80).trim() + ' ';
+                } else if (line.startsWith('ATOM  ') || line.startsWith('HETATM')) {
+                    const atomName = line.substring(12, 16).trim();
+                    // We only parse Alpha Carbons (CA) to get the exact sequence residues
+                    if (atomName === 'CA') {
+                        const resName = line.substring(17, 20).trim();
+                        const chainId = line.substring(21, 22).trim();
+                        const resNum = parseInt(line.substring(22, 26).trim());
+
+                        if (!chains[chainId]) chains[chainId] = [];
+                        if (!chains[chainId].some(r => r.num === resNum)) {
+                            chains[chainId].push({ num: resNum, name: resName });
+                        }
+                    }
+                }
+            }
+
+            // Cleanup parsed strings
+            title = title.trim() || "Local PDB Structure File";
+            organism = organism.trim() || "Unknown Organism (not in header)";
+            method = method.trim() || "Experimental structure (not specified)";
+
+            // Reconstruct primary sequence from the first chain found
+            const chainIds = Object.keys(chains);
+            let reconstructedSeq = '';
+            let chainInfo = '';
+
+            if (chainIds.length > 0) {
+                // We sort by residue number to reconstruct sequence in order
+                const firstChain = chainIds[0];
+                chains[firstChain].sort((a, b) => a.num - b.num);
+                reconstructedSeq = chains[firstChain].map(r => AA_3TO1[r.name] || 'X').join('');
+                chainInfo = `Chain ${firstChain} (out of chains: ${chainIds.join(', ')})`;
+            }
+
+            if (!reconstructedSeq) {
+                alert("Could not extract amino acid sequence from PDB ATOM records. Make sure it is a valid PDB structure file.");
+                return;
+            }
+
+            // Display Parsed Metadata
+            pdbFileInfoTitle.textContent = title;
+            pdbFileInfoOrganism.textContent = organism;
+            pdbFileInfoMethod.textContent = method;
+            pdbFileInfoLength.textContent = `${reconstructedSeq.length} amino acids (${chainInfo})`;
+
+            // Display Reconstructed Sequence
+            pdbFileSeqDisplay.textContent = reconstructedSeq;
+
+            // Run properties predictions
+            // 1. Isoelectric Point (pI)
+            const pI = estimateIsoelectricPoint(reconstructedSeq);
+            pdbFilePiVal.textContent = pI;
+
+            // 2. GRAVY score
+            let gravySum = 0;
+            for (let aa of reconstructedSeq) {
+                gravySum += HYDROPATHY_VALUES[aa] || 0;
+            }
+            const gravy = (gravySum / reconstructedSeq.length).toFixed(3);
+            pdbFileGravyVal.textContent = gravy;
+
+            // 3. Amino acid composition breakdown
+            const len = reconstructedSeq.length;
+            let acidic = 0; // D, E
+            let basic = 0;  // R, K, H
+            let polar = 0;  // S, T, Y, C, N, Q
+            
+            for (let aa of reconstructedSeq) {
+                if ('DE'.includes(aa)) acidic++;
+                else if ('RKH'.includes(aa)) basic++;
+                else if ('STYCNQ'.includes(aa)) polar++;
+            }
+
+            const acidicPct = Math.round((acidic / len) * 100);
+            const basicPct = Math.round((basic / len) * 100);
+            const polarPct = Math.round((polar / len) * 100);
+            const hydrophobicPct = 100 - (acidicPct + basicPct + polarPct);
+
+            pdbFileCompAcidicBar.style.width = `${acidicPct}%`;
+            pdbFileCompBasicBar.style.width = `${basicPct}%`;
+            pdbFileCompPolarBar.style.width = `${polarPct}%`;
+            pdbFileCompHydrophobicBar.style.width = `${hydrophobicPct}%`;
+
+            pdbFileCompAcidicPct.textContent = `${acidicPct}%`;
+            pdbFileCompBasicPct.textContent = `${basicPct}%`;
+            pdbFileCompPolarPct.textContent = `${polarPct}%`;
+            pdbFileCompHydrophobicPct.textContent = `${hydrophobicPct}%`;
+
+            // 4. Phosphorylation sites prediction
+            const phosphoSites = predictPhosphorylationSites(reconstructedSeq);
+            if (phosphoSites.length > 0) {
+                pdbFilePhosphoSummaryText.innerHTML = `Detected <strong>${phosphoSites.length}</strong> candidate phosphorylation residues (S/T/Y).`;
+                pdbFilePhosphoTable.style.display = 'table';
+                pdbFilePhosphoTableBody.innerHTML = phosphoSites.map(site => `
+                    <tr>
+                        <td>${site.residue}</td>
+                        <td><strong>${site.position}</strong></td>
+                        <td class="seq-display" style="padding:4px 8px; border:none;">${site.context}</td>
+                        <td>${site.kinase}</td>
+                        <td><code style="color:#06b6d4; font-size:10px;">${site.consensus}</code></td>
+                    </tr>
+                `).join('');
+            } else {
+                pdbFilePhosphoSummaryText.textContent = "No Serine, Threonine, or Tyrosine residues found. No phosphorylation sites predicted.";
+                pdbFilePhosphoTable.style.display = 'none';
+                pdbFilePhosphoTableBody.innerHTML = '';
+            }
+
+            // 5. Human Explanation Narrative
+            let interpretation = `This locally uploaded protein model contains <strong>${len} amino acids</strong> in the analyzed chain. `;
+            if (parseFloat(gravy) > 0) {
+                interpretation += `The sequence exhibits a <strong>hydrophobic character (GRAVY: ${gravy})</strong>, suggesting it could represent a membrane-spanning domain or a protein operating in a lipid-rich environment. `;
+            } else {
+                interpretation += `The sequence is <strong>hydrophilic (GRAVY: ${gravy})</strong>, indicating it is likely a soluble cytoplasmic or extracellular domain. `;
+            }
+
+            interpretation += `At its estimated isoelectric point of <strong>pI ${pI}</strong>, the protein carries a net neutral charge. `;
+            if (parseFloat(pI) < 6.0) {
+                interpretation += `With its highly acidic pI, it remains negatively charged at standard physiological pH (~7.4).`;
+            } else if (parseFloat(pI) > 8.0) {
+                interpretation += `With its highly basic pI, it remains positively charged at physiological pH, characteristic of nucleic acid binding proteins.`;
+            } else {
+                interpretation += `It is biologically neutral, carrying minimal net charge under physiological conditions.`;
+            }
+
+            pdbFileExplanation.innerHTML = interpretation;
+            resultsProteinUpload.classList.remove('hidden');
+        };
+
+        reader.readAsText(file);
+    }
+
+    if (analyzePdbFileBtn) analyzePdbFileBtn.addEventListener('click', runLocalPdbAnalysis);
 
     // Estimate Isoelectric Point (pI)
     function estimateIsoelectricPoint(seq) {
